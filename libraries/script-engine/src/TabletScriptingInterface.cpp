@@ -334,6 +334,14 @@ void TabletProxy::loadQMLSource(const QVariant& path) {
     }
 }
 
+void TabletProxy::loadQMLSource(const QVariant& path) {
+    if (_qmlTabletRoot) {
+        if (_state != State::QML) {
+            QMetaObject::invokeMethod(_qmlTabletRoot, "loadSource", Q_ARG(const QVariant&, path));
+            _state = State::QML;
+        }
+    }
+}
 void TabletProxy::gotoHomeScreen() {
     if (_state != State::Home) {
         if (!_toolbarMode && _qmlTabletRoot) {
