@@ -458,7 +458,7 @@ var toolBar = (function () {
 
     that.toggle = function () {
         that.setActive(!isActive);
-        activeButton.editProperties({isActive: isActive});
+        // activeButton.editProperties({isActive: isActive});
     };
 
     that.setActive = function (active) {
@@ -1448,11 +1448,12 @@ var ServerScriptStatusMonitor = function(entityID, statusCallback) {
 var PropertiesTool = function (opts) {
     var that = {};
 
-    var webView = new OverlayWebWindow({
-        title: 'Entity Properties',
-        source: ENTITY_PROPERTIES_URL,
-        toolWindow: true
-    });
+    var tablet = Tablet.getTablet("com.highfidelity.interface.tablet.system");
+    // var webView = new OverlayWebWindow({
+    //     title: 'Entity Properties',
+    //     source: ENTITY_PROPERTIES_URL,
+    //     toolWindow: true
+    // });
 
     var visible = false;
 
@@ -1461,16 +1462,20 @@ var PropertiesTool = function (opts) {
     var currentSelectedEntityID = null;
     var statusMonitor = null;
 
-    webView.setVisible(visible);
+    // webView.setVisible(visible);
 
     that.setVisible = function (newVisible) {
+        print("PropertiesTool.setVisible --> " + newVisible);
         visible = newVisible;
-        webView.setVisible(visible);
+        // webView.setVisible(visible);
+        if (visible) {
+            tablet.loadQMLSource("Edit.qml");
+        }
     };
 
     function updateScriptStatus(info) {
         info.type = "server_script_status";
-        webView.emitScriptEvent(JSON.stringify(info));
+        tablet.emitScriptEvent(JSON.stringify(info));
     };
 
     function resetScriptStatus() {
@@ -1522,10 +1527,10 @@ var PropertiesTool = function (opts) {
             selections.push(entity);
         }
         data.selections = selections;
-        webView.emitScriptEvent(JSON.stringify(data));
+        tablet.emitScriptEvent(JSON.stringify(data));
     });
 
-    webView.webEventReceived.connect(function (data) {
+    tablet.webEventReceived.connect(function (data) {
         try {
             data = JSON.parse(data);
         }

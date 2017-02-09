@@ -337,6 +337,7 @@ void TabletProxy::loadQMLSource(const QVariant& path) {
 void TabletProxy::loadQMLSource(const QVariant& path) {
     if (_qmlTabletRoot) {
         if (_state != State::QML) {
+            // _qmlTabletRoot->setProperty("eventBridge", QVariant::fromValue(_qmlOffscreenSurface));
             QMetaObject::invokeMethod(_qmlTabletRoot, "loadSource", Q_ARG(const QVariant&, path));
             _state = State::QML;
         }
@@ -568,7 +569,7 @@ QQuickItem* TabletProxy::getQmlTablet() const {
 }
 
 QQuickItem* TabletProxy::getQmlMenu() const {
-     if (!_qmlTabletRoot) {
+    if (!_qmlTabletRoot) {
         return nullptr;
     }
 
@@ -588,6 +589,15 @@ QQuickItem* TabletProxy::getQmlMenu() const {
     }
     return menuList;
 }
+
+QQuickItem* TabletProxy::findChild(QString childName) const {
+    if (!_qmlTabletRoot) {
+        return nullptr;
+    }
+
+    return _qmlTabletRoot->findChild<QQuickItem*>(childName);
+}
+
 
 //
 // TabletButtonProxy
