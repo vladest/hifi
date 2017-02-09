@@ -257,6 +257,11 @@ var toolBar = (function () {
                 text: "EDIT",
                 sortOrder: 10
             });
+            tablet.screenChanged.connect(function (type, url) {
+                if (isActive && (type !== "QML" || url !== "Edit.qml")) {
+                    that.toggle();
+                }
+            });
         }
 
         activeButton.clicked.connect(function() {
@@ -458,7 +463,9 @@ var toolBar = (function () {
 
     that.toggle = function () {
         that.setActive(!isActive);
-        // activeButton.editProperties({isActive: isActive});
+        if (Settings.getValue("HUDUIEnabled")) {
+            activeButton.editProperties({isActive: isActive});
+        }
     };
 
     that.setActive = function (active) {
@@ -488,8 +495,10 @@ var toolBar = (function () {
             cameraManager.disable();
             selectionDisplay.triggerMapping.disable();
         } else {
-            var tablet = Tablet.getTablet("com.highfidelity.interface.tablet.system");
-            tablet.loadQMLSource("Edit.qml");
+            if (!Settings.getValue("HUDUIEnabled")) {
+                var tablet = Tablet.getTablet("com.highfidelity.interface.tablet.system");
+                tablet.loadQMLSource("Edit.qml");
+            }
             UserActivityLogger.enabledEdit();
             entityListTool.setVisible(true);
             gridTool.setVisible(true);
@@ -1451,11 +1460,16 @@ var PropertiesTool = function (opts) {
     var that = {};
 
     var tablet = Tablet.getTablet("com.highfidelity.interface.tablet.system");
-    // var webView = new OverlayWebWindow({
-    //     title: 'Entity Properties',
-    //     source: ENTITY_PROPERTIES_URL,
-    //     toolWindow: true
-    // });
+    if (Settings.getValue("HUDUIEnabled")) {
+        webView = new OverlayWebWindow({
+            title: 'Entity Properties',
+            source: ENTITY_PROPERTIES_URL,
+            toolWindow: true
+        });
+    } else {
+        webView = Tablet.getTablet("com.highfidelity.interface.tablet.system");
+        webView.setVisible = function(value) {};
+    }
 
     var visible = false;
 
@@ -1464,11 +1478,11 @@ var PropertiesTool = function (opts) {
     var currentSelectedEntityID = null;
     var statusMonitor = null;
 
-    // webView.setVisible(visible);
+    webView.setVisible(visible);
 
     that.setVisible = function (newVisible) {
         visible = newVisible;
-        // webView.setVisible(visible);
+        webView.setVisible(visible);
             webView.loadQMLSource("Edit.qml");
     };
 
