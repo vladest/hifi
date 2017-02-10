@@ -341,8 +341,37 @@ void TabletProxy::loadQMLSource(const QVariant& path) {
             QMetaObject::invokeMethod(_qmlTabletRoot, "loadSource", Q_ARG(const QVariant&, path));
             _state = State::QML;
         }
+    } else {
+        qCDebug(scriptengine) << "tablet cannot load QML because _qmlTabletRoot is null";
     }
 }
+
+void TabletProxy::pushOntoStack(const QVariant& path) {
+    if (_qmlTabletRoot) {
+        auto stack = _qmlTabletRoot->findChild<QQuickItem*>("stack");
+        if (stack) {
+            QMetaObject::invokeMethod(stack, "pushSource", Q_ARG(const QVariant&, path));
+        } else {
+            qCDebug(scriptengine) << "tablet cannot push QML because _qmlTabletRoot doesn't have child stack";
+        }
+    } else {
+        qCDebug(scriptengine) << "tablet cannot push QML because _qmlTabletRoot is null";
+    }
+}
+
+void TabletProxy::popFromStack() {
+    if (_qmlTabletRoot) {
+        auto stack = _qmlTabletRoot->findChild<QQuickItem*>("stack");
+        if (stack) {
+            QMetaObject::invokeMethod(stack, "popSource");
+        } else {
+            qCDebug(scriptengine) << "tablet cannot pop QML because _qmlTabletRoot doesn't have child stack";
+        }
+    } else {
+        qCDebug(scriptengine) << "tablet cannot pop QML because _qmlTabletRoot is null";
+    }
+}
+
 void TabletProxy::gotoHomeScreen() {
     if (_state != State::Home) {
         if (!_toolbarMode && _qmlTabletRoot) {
