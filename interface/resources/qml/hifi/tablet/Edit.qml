@@ -2,6 +2,7 @@ import QtQuick 2.5
 import QtQuick.Controls 1.0
 import QtWebEngine 1.1
 import QtWebChannel 1.0
+import QtQuick.Controls.Styles 1.4
 import "../../controls"
 import HFWebEngineProfile 1.0
 
@@ -27,7 +28,8 @@ StackView {
         id: editBasePage
         TabView {
             id: editTabView
-            anchors.fill: parent
+            // anchors.fill: parent
+            height: 60
 
             Tab {
             title: "Entity List"
@@ -132,7 +134,7 @@ StackView {
             }
 
             Tab {
-                title: "Entity List"
+                title: "List"
                 active: true
                 enabled: true
                 property string originalUrl: ""
@@ -176,7 +178,7 @@ StackView {
             }
 
             Tab {
-                title: "Particle Explorer"
+                title: "Particles"
                 active: true
                 enabled: true
                 property string originalUrl: ""
@@ -187,6 +189,23 @@ StackView {
                     eventBridge: editRoot.eventBridge
                     anchors.fill: parent
                     enabled: true
+                }
+            }
+
+
+            style: TabViewStyle {
+                frameOverlap: 1
+                tab: Rectangle {
+                    color: styleData.selected ? "slategrey" :"grey"
+                    implicitWidth: text.width + 25
+                    implicitHeight: 60
+                    radius: 2
+                    Text {
+                        id: text
+                        anchors.centerIn: parent
+                        text: styleData.title
+                        color: styleData.selected ? "white" : "white"
+                    }
                 }
             }
         }
