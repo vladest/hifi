@@ -739,6 +739,7 @@ function MyController(hand) {
     this.grabPointIntersectsEntity = false;
     this.stylus = null;
     this.homeButtonTouched = false;
+    this.editTriggered = false;
 
     // Until there is some reliable way to keep track of a "stack" of parentIDs, we'll have problems
     // when more than one avatar does parenting grabs on things.  This script tries to work
@@ -1048,7 +1049,7 @@ function MyController(hand) {
         }
 
         var searchSphereLocation = Vec3.sum(distantPickRay.origin,
-            Vec3.multiply(distantPickRay.direction, this.searchSphereDistance));
+                                            Vec3.multiply(distantPickRay.direction, this.searchSphereDistance));
         this.searchSphereOn(searchSphereLocation, SEARCH_SPHERE_SIZE * this.searchSphereDistance,
                             (this.triggerSmoothedGrab() || this.secondarySqueezed()) ?
                             COLORS_GRAB_SEARCHING_FULL_SQUEEZE :
@@ -1216,6 +1217,10 @@ function MyController(hand) {
     this.off = function(deltaTime, timestamp) {
 
         this.checkForUnexpectedChildren();
+
+        if (this.editTriggered) {
+            this.editTriggered = false;
+        }
 
         if (this.triggerSmoothedReleased() && this.secondaryReleased()) {
             this.waitForTriggerRelease = false;
@@ -1683,23 +1688,25 @@ function MyController(hand) {
                 return aDistance - bDistance;
             });
             entity = grabbableEntities[0];
-            name = entityPropertiesCache.getProps(entity).name;
+            if (!isInEditMode() || entity == HMD.tabletID) {
+                name = entityPropertiesCache.getProps(entity).name;
             this.grabbedThingID = entity;
             this.grabbedIsOverlay = false;
-            if (this.entityWantsTrigger(entity)) {
-                if (this.triggerSmoothedGrab()) {
-                    this.setState(STATE_NEAR_TRIGGER, "near trigger '" + name + "'");
-                    return;
+                if (this.entityWantsTrigger(entity)) {
+                    if (this.triggerSmoothedGrab()) {
+                        this.setState(STATE_NEAR_TRIGGER, "near trigger '" + name + "'");
+                        return;
+                    } else {
+                        // potentialNearTriggerEntity = entity;
+                    }
                 } else {
-                    // potentialNearTriggerEntity = entity;
-                }
-            } else {
-                //  If near something grabbable, grab it!
-                if ((this.triggerSmoothedGrab() || this.secondarySqueezed()) && nearGrabEnabled) {
+                    //  If near something grabbable, grab it!
+                    if ((this.triggerSmoothedGrab() || this.secondarySqueezed()) && nearGrabEnabled) {
                     this.setState(STATE_NEAR_GRABBING, "near grab entity '" + name + "'");
-                    return;
-                } else {
-                    // potentialNearGrabEntity = entity;
+                        return;
+                    } else {
+                        // potentialNearGrabEntity = entity;
+                    }
                 }
             }
         }
@@ -1714,16 +1721,22 @@ function MyController(hand) {
             }
         }
 
-        if (rayPickInfo.entityID) {
-            if (this.triggerSmoothedGrab() && isInEditMode()) {
-                this.searchIndicatorOn(rayPickInfo.searchRay);
-                Messages.sendLocalMessage("entityToolUpdates", JSON.stringify({
-                    method: "selectEntity",
-                    entityID: rayPickInfo.entityID
-                }));
-                return;
+        if (isInEditMode()) {
+            this.searchIndicatorOn(rayPickInfo.searchRay);
+            if (this.triggerSmoothedGrab()) {
+                if (!this.editTriggered && rayPickInfo.entityID) {
+                    Messages.sendLocalMessage("entityToolUpdates", JSON.stringify({
+                        method: "selectEntity",
+                        entityID: rayPickInfo.entityID
+                    }));
+                }
+                this.editTriggered = true;
             }
+            Reticle.setVisible(false);
+            return;
+        }
 
+        if (rayPickInfo.entityID) {
             entity = rayPickInfo.entityID;
             name = entityPropertiesCache.getProps(entity).name;
             if (this.entityWantsTrigger(entity)) {
