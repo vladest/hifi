@@ -110,6 +110,7 @@ FocusScope {
         buildMenu()
     }
 
+    
     function buildMenu() {
         // Build submenu if specified.
         if (subMenu !== "") {
