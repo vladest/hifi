@@ -2,8 +2,14 @@ import QtQuick 2.5
 import QtGraphicalEffects 1.0
 import QtQuick.Controls 1.4
 import QtQml 2.2
+import QtWebChannel 1.0
+import QtWebEngine  1.1
+import HFWebEngineProfile 1.0
+
+
 import "."
 import "../../styles-uit"
+import "../../controls"
 
 FocusScope {
     id: tabletMenu
@@ -14,9 +20,9 @@ FocusScope {
 
     property var rootMenu: Menu { objectName:"rootMenu" }
     property var point: Qt.point(50, 50)
-    property string subMenu: ""
-
-    TabletMouseHandler { id: menuPopperUpper }
+    property var eventBridge;
+    signal sendToScript(var message);
+    TabletMenuStack { id: menuPopperUpper }
 
     Rectangle {
         id: bgNavBar
