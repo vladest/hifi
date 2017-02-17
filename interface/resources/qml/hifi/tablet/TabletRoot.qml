@@ -89,6 +89,7 @@ Item {
                 loader.item.setRootMenu(tabletRoot.rootMenu, tabletRoot.subMenu);
             }
             loader.item.forceActiveFocus();
+            tabletRoot.findStackableChild();
         }
     }
 
