@@ -113,6 +113,10 @@
 #include <ScriptEngines.h>
 #include <ScriptCache.h>
 #include <SoundCache.h>
+
+#include "ScriptsUsersModel.h"
+#include "ScriptsUsersModelFilter.h"
+
 #include <TabletScriptingInterface.h>
 #include <Tooltip.h>
 #include <udt/PacketHeaders.h>
@@ -156,6 +160,7 @@
 #include "scripting/ControllerScriptingInterface.h"
 #include "scripting/ToolbarScriptingInterface.h"
 #include "scripting/RatesScriptingInterface.h"
+
 #if defined(Q_OS_MAC) || defined(Q_OS_WIN)
 #include "SpeechRecognizer.h"
 #endif
@@ -498,6 +503,8 @@ bool setupEssentials(int& argc, char** argv) {
     DependencyManager::set<TabletScriptingInterface>();
     DependencyManager::set<ToolbarScriptingInterface>();
     DependencyManager::set<UserActivityLoggerScriptingInterface>();
+    DependencyManager::set<ScriptsUsersModel>();
+    DependencyManager::set<ScriptsUsersModelFilter>();
 
 #if defined(Q_OS_MAC) || defined(Q_OS_WIN)
     DependencyManager::set<SpeechRecognizer>();
@@ -1949,6 +1956,8 @@ void Application::initializeUi() {
 
     rootContext->setContextProperty("AvatarList", DependencyManager::get<AvatarManager>().data());
     rootContext->setContextProperty("Users", DependencyManager::get<UsersScriptingInterface>().data());
+    rootContext->setContextProperty("UsersModel", DependencyManager::get<ScriptsUsersModel>().data());
+    rootContext->setContextProperty("UsersModelSorted", DependencyManager::get<ScriptsUsersModelFilter>().data());
 
     rootContext->setContextProperty("UserActivityLogger", DependencyManager::get<UserActivityLoggerScriptingInterface>().data());
 
@@ -5513,6 +5522,9 @@ void Application::registerScriptEngineWithApplicationServices(ScriptEngine* scri
 
     scriptEngine->registerGlobalObject("UserActivityLogger", DependencyManager::get<UserActivityLoggerScriptingInterface>().data());
     scriptEngine->registerGlobalObject("Users", DependencyManager::get<UsersScriptingInterface>().data());
+
+    scriptEngine->registerGlobalObject("UsersModel", DependencyManager::get<ScriptsUsersModel>().data());
+    scriptEngine->registerGlobalObject("UsersModelSorted", DependencyManager::get<ScriptsUsersModelFilter>().data());
 
     if (auto steamClient = PluginManager::getInstance()->getSteamClientPlugin()) {
         scriptEngine->registerGlobalObject("Steam", new SteamScriptingInterface(scriptEngine, steamClient.get()));

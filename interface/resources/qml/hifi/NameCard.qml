@@ -28,7 +28,7 @@ Item {
     property string uuid: ""
     property string displayName: ""
     property string userName: ""
-    property real displayNameTextPixelSize: 18
+    property real displayNameTextPixelSize: hifi.dimensions.itemSize/2
     property int usernameTextHeight: 12
     property real audioLevel: 0.0
     property bool isMyCard: false
@@ -64,7 +64,7 @@ Item {
             visible: isMyCard
             // Size
             width: parent.width + 70
-            height: 35
+            height: hifi.dimensions.itemSize
             // Anchors
             anchors.top: parent.top
             anchors.left: parent.left

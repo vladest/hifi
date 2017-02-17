@@ -138,6 +138,12 @@ Item {
 
     Item {
         id: dimensions
+        //according to studies, minimum comfort button size, which minimize missed taps is 9mm
+        //this must be a base for all sizes calculations, so whole UI will be adapted to
+        //screen size w/o loosing comfort for user to interact with UI
+        readonly property real buttonSize: Screen.pixelDensity*7
+        readonly property real itemSize: buttonSize*1.5
+        //TODO: calculate rest according to pixel density. check with HMI team
         readonly property bool largeScreen: Screen.width >= 1920 && Screen.height >= 1080
         readonly property real borderRadius: largeScreen ? 7.5 : 5.0
         readonly property real borderWidth: largeScreen ? 2 : 1
@@ -151,7 +157,7 @@ Item {
         readonly property real spinnerSize: 50
         readonly property real tablePadding: 12
         readonly property real tableRowHeight: largeScreen ? 26 : 23
-        readonly property real tableHeaderHeight: 29
+        readonly property real tableHeaderHeight: itemSize
         readonly property vector2d modalDialogMargin: Qt.vector2d(50, 30)
         readonly property real modalDialogTitleHeight: 40
         readonly property real controlLineHeight: 28  // Height of spinbox control on 1920 x 1080 monitor
@@ -170,8 +176,8 @@ Item {
         readonly property real textFieldInput: dimensions.largeScreen ? 15 : 12
         readonly property real textFieldInputLabel: dimensions.largeScreen ? 13 : 9
         readonly property real textFieldSearchIcon: dimensions.largeScreen ? 30 : 24
-        readonly property real tableHeading: dimensions.largeScreen ? 12 : 10
-        readonly property real tableHeadingIcon: dimensions.largeScreen ? 40 : 33
+        readonly property real tableHeading: dimensions.tableHeaderHeight/3
+        readonly property real tableHeadingIcon: dimensions.tableHeaderHeight/1.5
         readonly property real tableText: dimensions.largeScreen ? 15 : 12
         readonly property real buttonLabel: dimensions.largeScreen ? 13 : 9
         readonly property real iconButton: dimensions.largeScreen ? 13 : 9

@@ -39,6 +39,8 @@
 #include "scripting/HMDScriptingInterface.h"
 #include <Preferences.h>
 #include "FileDialogHelper.h"
+#include "ScriptsUsersModel.h"
+#include "ScriptsUsersModelFilter.h"
 
 static const float DPI = 30.47f;
 static const float INCHES_TO_METERS = 1.0f / 39.3701f;
@@ -161,6 +163,8 @@ void Web3DOverlay::loadSourceURL() {
         _webSurface->getRootContext()->setContextProperty("HMD", DependencyManager::get<HMDScriptingInterface>().data());
         _webSurface->getRootContext()->setContextProperty("UserActivityLogger", DependencyManager::get<UserActivityLoggerScriptingInterface>().data());
         _webSurface->getRootContext()->setContextProperty("Preferences", DependencyManager::get<Preferences>().data());
+        _webSurface->getRootContext()->setContextProperty("UsersModel", DependencyManager::get<ScriptsUsersModel>().data());
+        _webSurface->getRootContext()->setContextProperty("UsersModelSorted", DependencyManager::get<ScriptsUsersModelFilter>().data());
 
         if (_webSurface->getRootItem() && _webSurface->getRootItem()->objectName() == "tabletRoot") {
             auto tabletScriptingInterface = DependencyManager::get<TabletScriptingInterface>();
