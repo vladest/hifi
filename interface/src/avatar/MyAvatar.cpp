@@ -828,7 +828,7 @@ void MyAvatar::saveData() {
     auto hmdInterface = DependencyManager::get<HMDScriptingInterface>();
     _avatarEntitiesLock.withReadLock([&] {
         for (auto entityID : _avatarEntityData.keys()) {
-            if (hmdInterface->getCurrentTabletFrameID() == entityID) {
+            if (hmdInterface->getCurrentTabletUIID() == entityID) {
                 // don't persist the tablet between domains / sessions
                 continue;
             }
