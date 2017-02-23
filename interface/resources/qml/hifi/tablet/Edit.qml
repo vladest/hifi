@@ -39,7 +39,7 @@ StackView {
                 property string originalUrl: ""
 
                 Rectangle { 
-                    color: "#383838"
+                    color: "#404040"
 
                     Text {
                         color: "#ffffff"
@@ -159,7 +159,7 @@ StackView {
             }
 
             Tab {
-                title: "List"
+                title: "LIST"
                 active: true
                 enabled: true
                 property string originalUrl: ""
@@ -203,7 +203,7 @@ StackView {
             }
 
             Tab {
-                title: "Particles"
+                title: "P"
                 active: true
                 enabled: true
                 property string originalUrl: ""
@@ -221,16 +221,28 @@ StackView {
             style: TabViewStyle {
                 frameOverlap: 1
                 tab: Rectangle {
-                    color: styleData.selected ? "slategrey" :"grey"
-                    implicitWidth: text.width + 25
-                    implicitHeight: 60
-                    radius: 2
+                    color: styleData.selected ? "#404040" :"black"
+                    implicitWidth: text.width + 42
+                    implicitHeight: 40
                     Text {
                         id: text
                         anchors.centerIn: parent
                         text: styleData.title
+                        font.pixelSize: 16
+                        font.bold: true
                         color: styleData.selected ? "white" : "white"
                     }
+                }
+                tabBar: Rectangle {
+                    color: "black"
+                    anchors.right: parent.right
+                    anchors.rightMargin: 0
+                    anchors.left: parent.left
+                    anchors.leftMargin: 0
+                    anchors.bottom: parent.bottom
+                    anchors.bottomMargin: 0
+                    anchors.top: parent.top
+                    anchors.topMargin: 0
                 }
             }
         }
