@@ -71,6 +71,7 @@ StackView {
                                 editRoot.sendToScript({
                                     method: "newEntityButtonClicked", params: { buttonName: "newModelButton" }
                                 });
+                                editTabView.currentIndex = 2
                             }
                         }
 
@@ -81,6 +82,7 @@ StackView {
                                 editRoot.sendToScript({
                                     method: "newEntityButtonClicked", params: { buttonName: "newCubeButton" }
                                 });
+                                editTabView.currentIndex = 2
                             }
                         }
 
@@ -91,6 +93,7 @@ StackView {
                                 editRoot.sendToScript({
                                     method: "newEntityButtonClicked", params: { buttonName: "newSphereButton" }
                                 });
+                                editTabView.currentIndex = 2
                             }
                         }
 
@@ -101,6 +104,7 @@ StackView {
                                 editRoot.sendToScript({
                                     method: "newEntityButtonClicked", params: { buttonName: "newLightButton" }
                                 });
+                                editTabView.currentIndex = 2
                             }
                         }
 
@@ -111,6 +115,7 @@ StackView {
                                 editRoot.sendToScript({
                                     method: "newEntityButtonClicked", params: { buttonName: "newTextButton" }
                                 });
+                                editTabView.currentIndex = 2
                             }
                         }
 
@@ -121,6 +126,7 @@ StackView {
                                 editRoot.sendToScript({
                                     method: "newEntityButtonClicked", params: { buttonName: "newWebButton" }
                                 });
+                                editTabView.currentIndex = 2
                             }
                         }
 
@@ -131,6 +137,7 @@ StackView {
                                 editRoot.sendToScript({
                                     method: "newEntityButtonClicked", params: { buttonName: "newZoneButton" }
                                 });
+                                editTabView.currentIndex = 2
                             }
                         }
 
@@ -141,6 +148,7 @@ StackView {
                                 editRoot.sendToScript({
                                     method: "newEntityButtonClicked", params: { buttonName: "newParticleButton" }
                                 });
+                                editTabView.currentIndex = 2
                             }
                         }
                     }
