@@ -39,6 +39,7 @@
 #include "scripting/HMDScriptingInterface.h"
 #include <Preferences.h>
 #include "FileDialogHelper.h"
+#include "scripting/WindowScriptingInterface.h"
 
 static const float DPI = 30.47f;
 static const float INCHES_TO_METERS = 1.0f / 39.3701f;
@@ -170,6 +171,7 @@ void Web3DOverlay::loadSourceURL() {
             _webSurface->getRootContext()->setContextProperty("Account", AccountScriptingInterface::getInstance());
             _webSurface->getRootContext()->setContextProperty("HMD", DependencyManager::get<HMDScriptingInterface>().data());
             _webSurface->getRootContext()->setContextProperty("fileDialogHelper", new FileDialogHelper());
+            _webSurface->getRootContext()->setContextProperty("Window", DependencyManager::get<WindowScriptingInterface>().data());
             tabletScriptingInterface->setQmlTabletRoot("com.highfidelity.interface.tablet.system", _webSurface->getRootItem(), _webSurface.data());
 
             // Override min fps for tablet UI, for silky smooth scrolling

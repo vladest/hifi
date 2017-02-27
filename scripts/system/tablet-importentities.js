@@ -12,9 +12,9 @@
 //
 
 (function() { // BEGIN LOCAL_SCOPE
-    var gotoQmlSource = "TabletAddressDialog.qml"; 
+    var gotoQmlSource = "ImportEntities.qml";
     var button;
-    var buttonName = "GOTO";
+    var buttonName = "Import Entitites";
     var toolBar = null;
     var tablet = null;
     function onAddressBarShown(visible) {
