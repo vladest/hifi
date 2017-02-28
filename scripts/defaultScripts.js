@@ -25,7 +25,6 @@ var DEFAULT_SCRIPTS = [
     "system/marketplaces/marketplaces.js",
     "system/edit.js",
     "system/tablet-users.js",
-    "system/tablet-importentities.js",
     "system/selectAudioDevice.js",
     "system/notifications.js",
     "system/controllers/controllerDisplayManager.js",
