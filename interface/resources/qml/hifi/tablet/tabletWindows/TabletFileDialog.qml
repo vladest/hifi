@@ -43,6 +43,7 @@ Item {
     property alias dir: fileTableModel.folder;
     // Set from OffscreenUi::getOpenFile()
     property alias filter: selectionType.filtersString;
+    property alias nameFilters: folderListModel.nameFilters
     // Set from OffscreenUi::getOpenFile()
     property int options; // <-- FIXME unused
 
@@ -756,7 +757,11 @@ Item {
         Action {
             id: cancelAction
             text: "Cancel"
-            onTriggered: { profileRoot.pop(); }
+            onTriggered: {
+                canceled()
+                if (profileRoot !== undefined)
+                    profileRoot.pop();
+            }
         }
     }
 

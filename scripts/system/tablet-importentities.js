@@ -11,24 +11,29 @@
 //  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
 //
 
+Script.include("edit.js");
+
 (function() { // BEGIN LOCAL_SCOPE
-    var gotoQmlSource = "ImportEntities.qml";
+
     var button;
-    var buttonName = "Import Entitites";
+    var buttonName = "Import\nEntitites";
     var toolBar = null;
     var tablet = null;
-    function onAddressBarShown(visible) {
-        if (toolBar) { 
-            button.editProperties({isActive: visible});
-        }
-    }
 
     function onClicked(){
-        if (toolBar) {
-            DialogsManager.toggleAddressBar();
-        } else {
-            tablet.loadQMLSource(gotoQmlSource);
-        }
+        tablet.loadQMLSource("TabletImportEntities.qml");
+
+//        var importURL = null;
+//        var fullPath = Window.browse("Select Model to Import", "", "*.json");
+//        if (fullPath) {
+//            importURL = "file:///" + fullPath;
+//        }
+//        if (importURL) {
+//            if (!isActive && (Entities.canRez() && Entities.canRezTmp())) {
+//                toolBar.toggle();
+//            }
+//            Edit.importSVO(importURL);
+//        }
     }
     if (Settings.getValue("HUDUIEnabled")) {
         toolBar = Toolbars.getToolbar("com.highfidelity.interface.toolbar.system");
@@ -49,7 +54,6 @@
     }
     
     button.clicked.connect(onClicked);
-    DialogsManager.addressBarShown.connect(onAddressBarShown);
     
     Script.scriptEnding.connect(function () {
         button.clicked.disconnect(onClicked);
@@ -59,7 +63,6 @@
         if (toolBar) {
             toolBar.removeButton(buttonName);
         }
-        DialogsManager.addressBarShown.disconnect(onAddressBarShown);
-    });
+   });
     
 }()); // END LOCAL_SCOPE
