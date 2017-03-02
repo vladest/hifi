@@ -359,6 +359,7 @@ void TabletProxy::loadQMLSource(const QVariant& path) {
 }
 
 void TabletProxy::pushOntoStack(const QVariant& path) {
+    if (_qmlTabletRoot) {
         auto stack = _qmlTabletRoot->findChild<QQuickItem*>("stack");
         if (stack) {
             QMetaObject::invokeMethod(stack, "pushSource", Q_ARG(const QVariant&, path));
@@ -389,7 +390,7 @@ void TabletProxy::popFromStack() {
         auto stack = _desktopWindow->asQuickItem()->findChild<QQuickItem*>("stack");
         if (stack) {
             QMetaObject::invokeMethod(stack, "popSource");
-        } else { 
+        } else {
             qCDebug(scriptengine) << "tablet cannot pop QML because _desktopWindow doesn't have child stack";
         }
     } else {
@@ -705,4 +706,3 @@ void TabletButtonProxy::editProperties(QVariantMap properties) {
 }
 
 #include "TabletScriptingInterface.moc"
-

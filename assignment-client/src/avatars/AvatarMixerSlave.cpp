@@ -38,7 +38,7 @@ void AvatarMixerSlave::configure(ConstIter begin, ConstIter end) {
     _end = end;
 }
 
-void AvatarMixerSlave::configureBroadcast(ConstIter begin, ConstIter end, 
+void AvatarMixerSlave::configureBroadcast(ConstIter begin, ConstIter end,
                                 p_high_resolution_clock::time_point lastFrameTimestamp,
                                 float maxKbpsPerNode, float throttlingRatio) {
     _begin = begin;
@@ -168,7 +168,6 @@ void AvatarMixerSlave::broadcastAvatarData(const SharedNodePointer& node) {
         QList<AvatarSharedPointer> avatarList;
         std::unordered_map<AvatarSharedPointer, SharedNodePointer> avatarDataToNodes;
 
-        int listItem = 0;
         std::for_each(_begin, _end, [&](const SharedNodePointer& otherNode) {
             const AvatarMixerClientData* otherNodeData = reinterpret_cast<const AvatarMixerClientData*>(otherNode->getLinkedData());
 
@@ -176,7 +175,6 @@ void AvatarMixerSlave::broadcastAvatarData(const SharedNodePointer& node) {
             // but not have yet sent data that's linked to the node. Check for that case and don't
             // consider those nodes.
             if (otherNodeData) {
-                listItem++;
                 AvatarSharedPointer otherAvatar = otherNodeData->getAvatarSharedPointer();
                 avatarList << otherAvatar;
                 avatarDataToNodes[otherAvatar] = otherNode;
@@ -185,8 +183,8 @@ void AvatarMixerSlave::broadcastAvatarData(const SharedNodePointer& node) {
 
         AvatarSharedPointer thisAvatar = nodeData->getAvatarSharedPointer();
         ViewFrustum cameraView = nodeData->getViewFrustom();
-        std::priority_queue<AvatarPriority> sortedAvatars = AvatarData::sortAvatars(
-                avatarList, cameraView,
+        std::priority_queue<AvatarPriority> sortedAvatars;
+        AvatarData::sortAvatars(avatarList, cameraView, sortedAvatars,
 
                 [&](AvatarSharedPointer avatar)->uint64_t{
                     auto avatarNode = avatarDataToNodes[avatar];
@@ -286,7 +284,7 @@ void AvatarMixerSlave::broadcastAvatarData(const SharedNodePointer& node) {
         int avatarRank = 0;
 
         // this is overly conservative, because it includes some avatars we might not consider
-        int remainingAvatars = (int)sortedAvatars.size(); 
+        int remainingAvatars = (int)sortedAvatars.size();
 
         while (!sortedAvatars.empty()) {
             AvatarPriority sortData = sortedAvatars.top();
@@ -356,7 +354,7 @@ void AvatarMixerSlave::broadcastAvatarData(const SharedNodePointer& node) {
             bool dropFaceTracking = false;
 
             quint64 start = usecTimestampNow();
-            QByteArray bytes = otherAvatar->toByteArray(detail, lastEncodeForOther, lastSentJointsForOther, 
+            QByteArray bytes = otherAvatar->toByteArray(detail, lastEncodeForOther, lastSentJointsForOther,
                                             hasFlagsOut, dropFaceTracking, distanceAdjust, viewerPosition, &lastSentJointsForOther);
             quint64 end = usecTimestampNow();
             _stats.toByteArrayElapsedTime += (end - start);
@@ -392,7 +390,7 @@ void AvatarMixerSlave::broadcastAvatarData(const SharedNodePointer& node) {
                     nodeData->incrementNumAvatarsSentLastFrame();
 
                     // set the last sent sequence number for this sender on the receiver
-                    nodeData->setLastBroadcastSequenceNumber(otherNode->getUUID(), 
+                    nodeData->setLastBroadcastSequenceNumber(otherNode->getUUID(),
                                     otherNodeData->getLastReceivedSequenceNumber());
 
                     // remember the last time we sent details about this other node to the receiver
@@ -431,4 +429,3 @@ void AvatarMixerSlave::broadcastAvatarData(const SharedNodePointer& node) {
     quint64 end = usecTimestampNow();
     _stats.jobElapsedTime += (end - start);
 }
-

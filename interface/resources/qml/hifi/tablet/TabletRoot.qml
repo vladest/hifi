@@ -10,10 +10,8 @@ Item {
     property var rootMenu;
     property string subMenu: ""
 
-    property var rootMenu;
     property var openModal: null;
     property var openMessage: null;
-    property string subMenu: ""
     signal showDesktop();
 
     function setOption(value) {
