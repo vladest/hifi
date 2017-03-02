@@ -359,7 +359,6 @@ void TabletProxy::loadQMLSource(const QVariant& path) {
 }
 
 void TabletProxy::pushOntoStack(const QVariant& path) {
-    if (_qmlTabletRoot) {
         auto stack = _qmlTabletRoot->findChild<QQuickItem*>("stack");
         if (stack) {
             QMetaObject::invokeMethod(stack, "pushSource", Q_ARG(const QVariant&, path));

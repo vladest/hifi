@@ -597,10 +597,9 @@ public:
 
     static const float OUT_OF_VIEW_PENALTY;
 
-    static void sortAvatars(
+    static std::priority_queue<AvatarPriority> sortAvatars(
         QList<AvatarSharedPointer> avatarList,
         const ViewFrustum& cameraView,
-        std::priority_queue<AvatarPriority>& sortedAvatarsOut,
         std::function<uint64_t(AvatarSharedPointer)> getLastUpdated,
         std::function<float(AvatarSharedPointer)> getBoundingRadius,
         std::function<bool(AvatarSharedPointer)> shouldIgnore);
@@ -610,6 +609,7 @@ public:
     static float _avatarSortCoefficientSize;
     static float _avatarSortCoefficientCenter;
     static float _avatarSortCoefficientAge;
+
 
 
 
