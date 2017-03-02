@@ -162,9 +162,8 @@ void AvatarManager::updateOtherAvatars(float deltaTime) {
     QList<AvatarSharedPointer> avatarList = avatarMap.values();
     ViewFrustum cameraView;
     qApp->copyDisplayViewFrustum(cameraView);
-        avatarList, cameraView,
 
-        [](AvatarSharedPointer avatar)->uint64_t{
+    std::priority_queue<AvatarPriority> sortedAvatars;
     AvatarData::sortAvatars(avatarList, cameraView, sortedAvatars,
 
         [](AvatarSharedPointer avatar)->uint64_t{
@@ -231,8 +230,6 @@ void AvatarManager::updateOtherAvatars(float deltaTime) {
             avatar->simulate(deltaTime, inView);
             avatar->updateRenderItem(pendingChanges);
             avatar->setLastRenderUpdateTime(startTime);
-            }
-            avatar->simulate(deltaTime, false);
         } else {
             // we've spent our full time budget --> bail on the rest of the avatar updates
             // --> more avatars may freeze until their priority trickles up
