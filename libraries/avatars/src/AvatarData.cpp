@@ -2408,9 +2408,5 @@ void AvatarEntityMapFromScriptValue(const QScriptValue& object, AvatarEntityMap&
         QByteArray binaryEntityProperties = jsonEntityProperties.toBinaryData();
         
         value[EntityID] = binaryEntityProperties;
-        QJsonDocument jsonEntityProperties = QJsonDocument::fromVariant(variantEntityProperties);
-        QByteArray binaryEntityProperties = jsonEntityProperties.toBinaryData();
-        
-        value[EntityID] = binaryEntityProperties;
     }
 }
