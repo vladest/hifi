@@ -21,6 +21,9 @@ FocusScope {
     property var rootMenu: Menu { objectName:"rootMenu" }
     property var point: Qt.point(50, 50);
     TabletMenuStack { id: menuPopperUpper }
+    property string subMenu: ""
+    property var eventBridge;
+    signal sendToScript(var message);
 
     Rectangle {
         id: bgNavBar
@@ -101,6 +104,7 @@ FocusScope {
     function pop() {
         menuPopperUpper.closeLastMenu();
     }
+
 
     function setRootMenu(rootMenu, subMenu) {
         tabletMenu.subMenu = subMenu;

@@ -206,16 +206,16 @@ HighlightedEntity.updateOverlays = function updateHighlightedEntities() {
     });
 };
 
-//
-// The qml window and communications.
-//
-var pal = new OverlayWindow({
-    title: 'People Action List',
-    source: 'hifi/Pal.qml',
-    width: 580,
-    height: 640,
-    visible: false
-});
+/* this contains current gain for a given node (by session id).  More efficient than
+ * querying it, plus there isn't a getGain function so why write one */
+var sessionGains = {};
+function convertDbToLinear(decibels) {
+    // +20db = 10x, 0dB = 1x, -10dB = 0.1x, etc...
+    // but, your perception is that something 2x as loud is +10db
+    // so we go from -60 to +20 or 1/64x to 4x.  For now, we can
+    // maybe scale the signal this way??
+    return Math.pow(2, decibels/10.0);
+}
 
 function fromQml(message) { // messages are {method, params}, like json-rpc. See also sendToQml.
     var data;
@@ -252,8 +252,6 @@ function fromQml(message) { // messages are {method, params}, like json-rpc. See
         // If filter is specified from .qml instead of through settings, update the settings.
         if (message.params.filter !== undefined) {
             Settings.setValue('pal/filtered', !!message.params.filter);
-        }
-        populateUserList(message.params.selected);
         }
         populateUserList(message.params.selected);
         UserActivityLogger.palAction("refresh", "");

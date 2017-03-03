@@ -1427,7 +1427,7 @@ var ServerScriptStatusMonitor = function(entityID, statusCallback) {
 var PropertiesTool = function (opts) {
     var that = {};
 
-    var tablet = Tablet.getTablet("com.highfidelity.interface.tablet.system");
+    var webView = null;
     webView = Tablet.getTablet("com.highfidelity.interface.tablet.system");
     webView.setVisible = function(value) {};
 
@@ -1448,7 +1448,7 @@ var PropertiesTool = function (opts) {
 
     function updateScriptStatus(info) {
         info.type = "server_script_status";
-        tablet.emitScriptEvent(JSON.stringify(info));
+        webView.emitScriptEvent(JSON.stringify(info));
     }
 
     function resetScriptStatus() {
@@ -1500,10 +1500,10 @@ var PropertiesTool = function (opts) {
             selections.push(entity);
         }
         data.selections = selections;
-        tablet.emitScriptEvent(JSON.stringify(data));
+        webView.emitScriptEvent(JSON.stringify(data));
     });
 
-    tablet.webEventReceived.connect(function (data) {
+    webView.webEventReceived.connect(function (data) {
         try {
             data = JSON.parse(data);
             print("--- edit.js webView.webEventReceived ---");

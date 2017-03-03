@@ -174,13 +174,13 @@ QByteArray AvatarData::toByteArrayStateful(AvatarDataDetail dataDetail) {
     AvatarDataPacket::HasFlags hasFlagsOut;
     auto lastSentTime = _lastToByteArray;
     _lastToByteArray = usecTimestampNow();
-    return AvatarData::toByteArray(dataDetail, lastSentTime, getLastSentJointData(),
+    return AvatarData::toByteArray(dataDetail, lastSentTime, getLastSentJointData(), 
                         hasFlagsOut, false, false, glm::vec3(0), nullptr,
                         &_outboundDataRate);
 }
 
 QByteArray AvatarData::toByteArray(AvatarDataDetail dataDetail, quint64 lastSentTime, const QVector<JointData>& lastSentJointData,
-    AvatarDataPacket::HasFlags& hasFlagsOut, bool dropFaceTracking, bool distanceAdjust,
+    AvatarDataPacket::HasFlags& hasFlagsOut, bool dropFaceTracking, bool distanceAdjust, 
     glm::vec3 viewerPosition, QVector<JointData>* sentJointDataOut, AvatarDataRate* outboundDataRateOut) const {
 
     bool cullSmallChanges = (dataDetail == CullSmallData);
@@ -202,7 +202,7 @@ QByteArray AvatarData::toByteArray(AvatarDataDetail dataDetail, quint64 lastSent
 
     // FIXME -
     //
-    //    BUG -- if you enter a space bubble, and then back away, the avatar has wrong orientation until "send all" happens...
+    //    BUG -- if you enter a space bubble, and then back away, the avatar has wrong orientation until "send all" happens... 
     //      this is an iFrame issue... what to do about that?
     //
     //    BUG -- Resizing avatar seems to "take too long"... the avatar doesn't redraw at smaller size right away
@@ -2385,11 +2385,11 @@ QScriptValue AvatarEntityMapToScriptValue(QScriptEngine* engine, const AvatarEnt
         if (!jsonEntityProperties.isObject()) {
             qCDebug(avatars) << "bad AvatarEntityData in AvatarEntityMap" << QString(entityProperties.toHex());
         }
-
+        
         QVariant variantEntityProperties = jsonEntityProperties.toVariant();
         QVariantMap entityPropertiesMap = variantEntityProperties.toMap();
         QScriptValue scriptEntityProperties = variantMapToScriptValue(entityPropertiesMap, *engine);
-
+        
         QString key = entityID.toString();
         obj.setProperty(key, scriptEntityProperties);
     }
@@ -2401,12 +2401,12 @@ void AvatarEntityMapFromScriptValue(const QScriptValue& object, AvatarEntityMap&
     while (itr.hasNext()) {
         itr.next();
         QUuid EntityID = QUuid(itr.name());
-
+        
         QScriptValue scriptEntityProperties = itr.value();
         QVariant variantEntityProperties = scriptEntityProperties.toVariant();
         QJsonDocument jsonEntityProperties = QJsonDocument::fromVariant(variantEntityProperties);
         QByteArray binaryEntityProperties = jsonEntityProperties.toBinaryData();
-
+        
         value[EntityID] = binaryEntityProperties;
     }
 }

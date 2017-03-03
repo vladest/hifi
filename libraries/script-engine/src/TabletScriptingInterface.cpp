@@ -343,16 +343,6 @@ void TabletProxy::loadQMLSource(const QVariant& path) {
             emit screenChanged(QVariant("QML"), path);
             QMetaObject::invokeMethod(root, "setShown", Q_ARG(const QVariant&, QVariant(true)));
         }
-    }
-}
-
-void TabletProxy::loadQMLSource(const QVariant& path) {
-    if (_qmlTabletRoot) {
-        if (_state != State::QML) {
-            // _qmlTabletRoot->setProperty("eventBridge", QVariant::fromValue(_qmlOffscreenSurface));
-            QMetaObject::invokeMethod(_qmlTabletRoot, "loadSource", Q_ARG(const QVariant&, path));
-            _state = State::QML;
-        }
     } else {
         qCDebug(scriptengine) << "tablet cannot load QML because _qmlTabletRoot is null";
     }
@@ -390,7 +380,7 @@ void TabletProxy::popFromStack() {
         auto stack = _desktopWindow->asQuickItem()->findChild<QQuickItem*>("stack");
         if (stack) {
             QMetaObject::invokeMethod(stack, "popSource");
-        } else {
+        } else { 
             qCDebug(scriptengine) << "tablet cannot pop QML because _desktopWindow doesn't have child stack";
         }
     } else {
@@ -706,3 +696,4 @@ void TabletButtonProxy::editProperties(QVariantMap properties) {
 }
 
 #include "TabletScriptingInterface.moc"
+

@@ -29,7 +29,7 @@ class HMDScriptingInterface : public AbstractHMDScriptingInterface, public Depen
     Q_PROPERTY(glm::quat orientation READ getOrientation)
     Q_PROPERTY(bool mounted READ isMounted)
     Q_PROPERTY(bool showTablet READ getShouldShowTablet)
-    Q_PROPERTY(QUuid tabletID READ getCurrentTabletUIID WRITE setCurrentTabletUIID)
+    Q_PROPERTY(QUuid tabletID READ getCurrentTabletFrameID WRITE setCurrentTabletFrameID)
     Q_PROPERTY(QUuid homeButtonID READ getCurrentHomeButtonID WRITE setCurrentHomeButtonID)
     Q_PROPERTY(QUuid tabletScreenID READ getCurrentTabletScreenID WRITE setCurrentTabletScreenID)
 
@@ -91,13 +91,10 @@ public:
     bool getShouldShowTablet() const { return _showTablet; }
 
     void setCurrentTabletFrameID(QUuid tabletID) { _tabletUIID = tabletID; }
-    QUuid getCurrentTabletUIID() const { return _tabletUIID; }
+    QUuid getCurrentTabletFrameID() const { return _tabletUIID; }
 
     void setCurrentHomeButtonID(QUuid homeButtonID) { _homeButtonID = homeButtonID; }
     QUuid getCurrentHomeButtonID() const { return _homeButtonID; }
-
-    void setCurrentTabletScreenID(QUuid tabletID) { _tabletScreenID = tabletID; }
-    QUuid getCurrentTabletScreenID() const { return _tabletScreenID; }
 
     void setCurrentTabletScreenID(QUuid tabletID) { _tabletScreenID = tabletID; }
     QUuid getCurrentTabletScreenID() const { return _tabletScreenID; }

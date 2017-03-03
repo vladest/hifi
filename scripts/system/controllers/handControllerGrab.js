@@ -13,7 +13,7 @@
 //  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
 
 /* global getEntityCustomData, flatten, Xform, Script, Quat, Vec3, MyAvatar, Entities, Overlays, Settings,
-   Reticle, Controller, Camera, Messages, Mat4, getControllerWorldLocation, getGrabPointSphereOffset,
+    Reticle, Controller, Camera, Messages, Mat4, getControllerWorldLocation, getGrabPointSphereOffset,
    setGrabCommunications, Menu, HMD, isInEditMode */
 /* eslint indent: ["error", 4, { "outerIIFEBody": 0 }] */
 
@@ -1688,10 +1688,10 @@ function MyController(hand) {
                 return aDistance - bDistance;
             });
             entity = grabbableEntities[0];
-            if (!isInEditMode() || entity == HMD.tabletID) {
+            if (!isInEditMode() || entity == HMD.tabletID) { // tablet is grabbable, even when editing
                 name = entityPropertiesCache.getProps(entity).name;
-            this.grabbedThingID = entity;
-            this.grabbedIsOverlay = false;
+                this.grabbedThingID = entity;
+                this.grabbedIsOverlay = false;
                 if (this.entityWantsTrigger(entity)) {
                     if (this.triggerSmoothedGrab()) {
                         this.setState(STATE_NEAR_TRIGGER, "near trigger '" + name + "'");
@@ -1702,7 +1702,7 @@ function MyController(hand) {
                 } else {
                     //  If near something grabbable, grab it!
                     if ((this.triggerSmoothedGrab() || this.secondarySqueezed()) && nearGrabEnabled) {
-                    this.setState(STATE_NEAR_GRABBING, "near grab entity '" + name + "'");
+                        this.setState(STATE_NEAR_GRABBING, "near grab entity '" + name + "'");
                         return;
                     } else {
                         // potentialNearGrabEntity = entity;
