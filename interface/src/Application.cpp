@@ -499,6 +499,7 @@ bool setupEssentials(int& argc, char** argv) {
     DependencyManager::set<TabletScriptingInterface>();
     DependencyManager::set<ToolbarScriptingInterface>();
     DependencyManager::set<UserActivityLoggerScriptingInterface>();
+    DependencyManager::set<AssetMappingsScriptingInterface>();
 
 #if defined(Q_OS_MAC) || defined(Q_OS_WIN)
     DependencyManager::set<SpeechRecognizer>();
@@ -1970,7 +1971,7 @@ void Application::initializeUi() {
     rootContext->setContextProperty("Quat", new Quat());
     rootContext->setContextProperty("Vec3", new Vec3());
     rootContext->setContextProperty("Uuid", new ScriptUUID());
-    rootContext->setContextProperty("Assets", new AssetMappingsScriptingInterface());
+    rootContext->setContextProperty("Assets", DependencyManager::get<AssetMappingsScriptingInterface>().data());
 
     rootContext->setContextProperty("AvatarList", DependencyManager::get<AvatarManager>().data());
     rootContext->setContextProperty("Users", DependencyManager::get<UsersScriptingInterface>().data());
@@ -5824,14 +5825,29 @@ void Application::showAssetServerWidget(QString filePath) {
     if (!DependencyManager::get<NodeList>()->getThisNodeCanWriteAssets()) {
         return;
     }
-    static const QUrl url { "AssetServer.qml" };
 
     auto startUpload = [=](QQmlContext* context, QObject* newObject){
         if (!filePath.isEmpty()) {
             emit uploadRequest(filePath);
         }
     };
-    DependencyManager::get<OffscreenUi>()->show(url, "AssetServer", startUpload);
+
+    static const QUrl url { "AssetServer.qml" };
+    auto tabletScriptingInterface = DependencyManager::get<TabletScriptingInterface>();
+    auto tablet = dynamic_cast<TabletProxy*>(tabletScriptingInterface->getTablet("com.highfidelity.interface.tablet.system"));
+
+    if (tablet->getToolbarMode()) {
+        DependencyManager::get<OffscreenUi>()->show(url, "AssetServer", startUpload);
+    } else {
+        QQuickItem* tabletRoot = tablet->getTabletRoot();
+        if (!tabletRoot && !isHMDMode()) {
+            DependencyManager::get<OffscreenUi>()->show(url, "AssetServer", startUpload);
+        } else {
+            static const QUrl url("../../hifi/dialogs/TabletAssetServer.qml");
+            tablet->pushOntoStack(url);
+        }
+    }
+
     startUpload(nullptr, nullptr);
 }
 
