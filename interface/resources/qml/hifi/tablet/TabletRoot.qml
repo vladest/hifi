@@ -29,7 +29,9 @@ Item {
         return openMessage;
     }
 
+    Component { id: customInputDialogBuilder; TabletCustomQueryDialog { } }
     function customInputDialog(properties) {
+        return customInputDialogBuilder.createObject(tabletRoot, properties);
     }
 
     Component { id: fileDialogBuilder; TabletFileDialog { } }

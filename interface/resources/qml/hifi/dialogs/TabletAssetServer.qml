@@ -101,7 +101,7 @@ Rectangle {
     }
 
     function askForOverwrite(path, callback) {
-        var object = desktop.messageBox({
+        var object = tabletRoot.messageBox({
                                             icon: hifi.icons.question,
                                             buttons: OriginalDialogs.StandardButton.Yes | OriginalDialogs.StandardButton.No,
                                             defaultButton: OriginalDialogs.StandardButton.No,
@@ -159,7 +159,7 @@ Rectangle {
 
         var SHAPE_TYPE_DEFAULT = SHAPE_TYPE_STATIC_MESH;
         var DYNAMIC_DEFAULT = false;
-        var prompt = desktop.customInputDialog({
+        var prompt = tabletRoot.customInputDialog({
                                                    textInput: {
                                                        label: "Model URL",
                                                        text: defaultURL
@@ -267,7 +267,7 @@ Rectangle {
             return;
         }
 
-        var object = desktop.inputDialog({
+        var object = tabletRoot.inputDialog({
                                              label: "Enter new path:",
                                              current: path,
                                              placeholderText: "Enter path here"
@@ -275,7 +275,7 @@ Rectangle {
         object.selected.connect(function(destinationPath) {
             destinationPath = destinationPath.trim();
 
-            if (path == destinationPath) {
+            if (path === destinationPath) {
                 return;
             }
             if (fileExists(destinationPath)) {
@@ -299,7 +299,7 @@ Rectangle {
         var isFolder = assetProxyModel.data(treeView.selection.currentIndex, 0x101);
         var typeString = isFolder ? 'folder' : 'file';
 
-        var object = desktop.messageBox({
+        var object = tabletRoot.messageBox({
                                             icon: hifi.icons.question,
                                             buttons: OriginalDialogs.StandardButton.Yes + OriginalDialogs.StandardButton.No,
                                             defaultButton: OriginalDialogs.StandardButton.Yes,
@@ -381,7 +381,7 @@ Rectangle {
         if (fileUrl) {
             doUpload(fileUrl, true);
         } else {
-            var browser = desktop.fileDialog({
+            var browser = tabletRoot.fileDialog({
                                                  selectDirectory: false,
                                                  dir: currentDirectory
                                              });
@@ -405,7 +405,7 @@ Rectangle {
     }
 
     function errorMessageBox(message) {
-        return desktop.messageBox({
+        return tabletRoot.messageBox({
                                       icon: hifi.icons.warning,
                                       defaultButton: OriginalDialogs.StandardButton.Ok,
                                       title: "Error",
@@ -415,7 +415,7 @@ Rectangle {
 
     Column {
         width: parent.width
-        y: 90 //-bgNavBar
+        y: hifi.dimensions.tabletMenuHeader //-bgNavBar
         spacing: 10
 
         HifiControls.TabletContentSection {
