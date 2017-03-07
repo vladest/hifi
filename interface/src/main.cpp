@@ -30,6 +30,8 @@
 #include "MainWindow.h"
 #include <QtCore/QProcess>
 
+#include <QNetworkProxyFactory>
+
 #ifdef HAS_BUGSPLAT
 #include <BugSplat.h>
 #include <CrashReporter.h>
@@ -193,6 +195,8 @@ int main(int argc, const char* argv[]) {
     int exitCode;
     {
         Application app(argc, const_cast<char**>(argv), startupTime, runServer, serverContentPathOptionValue);
+
+        QNetworkProxyFactory::setUseSystemConfiguration(true);
 
         // If we failed the OpenGLVersion check, log it.
         if (override) {

@@ -14,6 +14,7 @@
 
 #include "AssignmentClientApp.h"
 #include <BuildInfo.h>
+#include <QNetworkProxyFactory>
 
 int main(int argc, char* argv[]) {
     disableQtBearerPoll(); // Fixes wifi ping spikes
@@ -27,7 +28,8 @@ int main(int argc, char* argv[]) {
     qInfo() << "Starting.";
 
     AssignmentClientApp app(argc, argv);
-    
+    QNetworkProxyFactory::setUseSystemConfiguration(true);
+
     int acReturn = app.exec();
     qDebug() << "assignment-client process" <<  app.applicationPid() << "exiting with status code" << acReturn;
 

@@ -20,6 +20,7 @@
 #include <BuildInfo.h>
 
 #include "DomainServer.h"
+#include <QNetworkProxyFactory>
 
 int main(int argc, char* argv[]) {
     disableQtBearerPoll(); // Fixes wifi ping spikes
@@ -41,6 +42,8 @@ int main(int argc, char* argv[]) {
     // use a do-while to handle domain-server restart
     do {
         DomainServer domainServer(argc, argv);
+        QNetworkProxyFactory::setUseSystemConfiguration(true);
+
         currentExitCode = domainServer.exec();
     } while (currentExitCode == DomainServer::EXIT_CODE_REBOOT);
 

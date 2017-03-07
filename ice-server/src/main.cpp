@@ -14,6 +14,7 @@
 #include <LogHandler.h>
 
 #include "IceServer.h"
+#include <QNetworkProxyFactory>
 
 int main(int argc, char* argv[]) {
 #ifndef WIN32
@@ -24,5 +25,7 @@ int main(int argc, char* argv[]) {
     qInfo() << "Starting.";
     
     IceServer iceServer(argc, argv);
+    QNetworkProxyFactory::setUseSystemConfiguration(true);
+
     return iceServer.exec();
 }
