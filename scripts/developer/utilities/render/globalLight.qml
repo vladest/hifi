@@ -34,3 +34,4 @@ Column {
         Render.getConfig("FetchSceneSelection").freezeFrustum = false;
         Render.getConfig("CullSceneSelection").freezeFrustum = false;                     
     }
+}

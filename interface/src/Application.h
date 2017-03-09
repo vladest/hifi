@@ -401,6 +401,7 @@ public slots:
     void addAssetToWorldMessageClose();
 
     Q_INVOKABLE void toggleMuteAudio();
+    void showScriptLogs();
 
 private slots:
     void showDesktop();
