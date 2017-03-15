@@ -1,5 +1,5 @@
 //
-//  TabletLODTools.qml
+//  TabletDCDialog.qml
 //
 //  Created by Vlad Stelmahovsky on  3/15/17
 //  Copyright 2017 High Fidelity, Inc.
