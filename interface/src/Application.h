@@ -404,6 +404,7 @@ public slots:
 
     Q_INVOKABLE void toggleMuteAudio();
     void loadLODToolsDialog();
+    void loadDomainConnectionDialog();
 
 private slots:
     void showDesktop();

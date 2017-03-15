@@ -171,6 +171,7 @@
 #include "ui/Stats.h"
 #include "ui/UpdateDialog.h"
 #include "ui/overlays/Overlays.h"
+#include "ui/DomainConnectionModel.h"
 #include "Util.h"
 #include "InterfaceParentFinder.h"
 
@@ -500,6 +501,7 @@ bool setupEssentials(int& argc, char** argv) {
     DependencyManager::set<ToolbarScriptingInterface>();
     DependencyManager::set<UserActivityLoggerScriptingInterface>();
     DependencyManager::set<AssetMappingsScriptingInterface>();
+    DependencyManager::set<DomainConnectionModel>();
 
 #if defined(Q_OS_MAC) || defined(Q_OS_WIN)
     DependencyManager::set<SpeechRecognizer>();
@@ -6373,6 +6375,17 @@ void Application::loadLODToolsDialog() {
         tablet->pushOntoStack("../../hifi/dialogs/TabletLODTools.qml");
     }
 
+}
+
+void Application::loadDomainConnectionDialog() {
+    auto tabletScriptingInterface = DependencyManager::get<TabletScriptingInterface>();
+    auto tablet = dynamic_cast<TabletProxy*>(tabletScriptingInterface->getTablet("com.highfidelity.interface.tablet.system"));
+    if (tablet->getToolbarMode() || (!tablet->getTabletRoot() && !isHMDMode())) {
+        auto dialogsManager = DependencyManager::get<DialogsManager>();
+        dialogsManager->showDomainConnectionDialog();
+    } else {
+        tablet->pushOntoStack("../../hifi/dialogs/TabletDCDialog.qml");
+    }
 }
 
 void Application::toggleLogDialog() {
