@@ -25,8 +25,8 @@ StackView {
     HifiConstants { id: hifi }
     HifiStyles.HifiConstants { id: hifiStyleConstants }
     initialItem: addressBarDialog
-    width: parent.width
-    height: parent.height
+    width: parent !== null ? parent.width : undefined
+    height: parent !== null ? parent.height : undefined
 
     property var allStories: [];
     property int cardWidth: 460;
