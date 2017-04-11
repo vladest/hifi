@@ -81,6 +81,7 @@ class FaceTracker;
 class MainWindow;
 class AssetUpload;
 class CompositorHelper;
+class QSound;
 
 namespace controller {
     class StateController;
@@ -686,6 +687,7 @@ private:
     QTimer _addAssetToWorldErrorTimer;
 
     FileScriptingInterface* _fileDownload;
+    QSound *_snapshotSound;
 };
 
 
