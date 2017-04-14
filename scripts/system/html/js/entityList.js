@@ -12,6 +12,8 @@ var currentSortColumn = 'type';
 var currentSortOrder = 'des';
 var entityList = null;
 var refreshEntityListTimer = null;
+var clickedID = "";
+
 const ASCENDING_STRING = '&#x25B4;';
 const DESCENDING_STRING = '&#x25BE;';
 const LOCKED_GLYPH = "&#xe006;";
@@ -27,6 +29,7 @@ debugPrint = function (message) {
 };
 
 function loaded() {
+
   openEventBridge(function() {
       entityList = new List('entity-list', { valueNames: ['name', 'type', 'url', 'locked', 'visible'], page: MAX_ITEMS});
       entityList.clear();
@@ -41,7 +44,7 @@ function loaded() {
       elRadius = document.getElementById("radius");
       elExport = document.getElementById("export");
       elPal = document.getElementById("pal");
-      elEntityTable = document.getElementById("entity-table");
+      //elEntityTable = document.getElementById("entity-table");
       elInfoToggle = document.getElementById("info-toggle");
       elInfoToggleGlyph = elInfoToggle.firstChild;
       elFooter = document.getElementById("footer-text");
@@ -84,8 +87,28 @@ function loaded() {
           setSortColumn('hasScript');
       };
 
+      var clicks = 0, delay = 1000;
+
+      function onMouUp(clickEvent) {
+          clicks++;
+          //js/htms doesnt support onclick and double click on same element simultaneously
+          //so simulate this behavior using timer
+
+          setTimeout(function() {
+              clicks = 0;
+          }, delay);
+
+          if (clicks === 4) {
+              clicks = 0;
+              onRowDoubleClicked(clickedID);
+          }
+          return false;
+      }
+
       function onRowClicked(clickEvent) {
           var id = this.dataset.entityId;
+          clickedID = id;
+
           var selection = [this.dataset.entityId];
           if (clickEvent.ctrlKey) {
               selection = selection.concat(selectedEntities);
@@ -128,11 +151,11 @@ function loaded() {
           refreshFooter();
       }
 
-      function onRowDoubleClicked() {
+      function onRowDoubleClicked(id) {
           EventBridge.emitWebEvent(JSON.stringify({
               type: "selectionUpdate",
               focus: true,
-              entityIds: [this.dataset.entityId],
+              entityIds: [id],
           }));
       }
 
@@ -172,7 +195,7 @@ function loaded() {
                       currentElement.setAttribute('title', url);
                       currentElement.dataset.entityId = id;
                       currentElement.onclick = onRowClicked;
-                      currentElement.ondblclick = onRowDoubleClicked;
+                      currentElement.onmouseup = onMouUp;
               });
 
               if (refreshEntityListTimer) {
