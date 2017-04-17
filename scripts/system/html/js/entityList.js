@@ -44,7 +44,6 @@ function loaded() {
       elRadius = document.getElementById("radius");
       elExport = document.getElementById("export");
       elPal = document.getElementById("pal");
-      //elEntityTable = document.getElementById("entity-table");
       elInfoToggle = document.getElementById("info-toggle");
       elInfoToggleGlyph = elInfoToggle.firstChild;
       elFooter = document.getElementById("footer-text");
@@ -89,7 +88,7 @@ function loaded() {
 
       var clicks = 0, delay = 1000;
 
-      function onMouUp(clickEvent) {
+      function onMouseUp(clickEvent) {
           clicks++;
           //js/htms doesnt support onclick and double click on same element simultaneously
           //so simulate this behavior using timer
@@ -195,7 +194,7 @@ function loaded() {
                       currentElement.setAttribute('title', url);
                       currentElement.dataset.entityId = id;
                       currentElement.onclick = onRowClicked;
-                      currentElement.onmouseup = onMouUp;
+                      currentElement.onmouseup = onMouseUp;
               });
 
               if (refreshEntityListTimer) {
