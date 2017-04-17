@@ -128,17 +128,7 @@ Rectangle {
     property int dropRadius: 2;
     property int dropSamples: 9;
     property int dropSpread: 0;
-    DropShadow {
-        visible: true;
-        source: place;
-        anchors.fill: place;
-        horizontalOffset: dropHorizontalOffset;
-        verticalOffset: dropVerticalOffset;
-        radius: dropRadius;
-        samples: dropSamples;
-        color: hifi.colors.black;
-        spread: dropSpread;
-    }
+
     RalewayLight {
         id: place;
         visible: showPlace;
@@ -152,6 +142,17 @@ Rectangle {
             right: parent.right;
             margins: textPadding;
         }
+    }
+    DropShadow {
+        visible: true;
+        source: place;
+        anchors.fill: place;
+        horizontalOffset: dropHorizontalOffset;
+        verticalOffset: dropVerticalOffset;
+        radius: dropRadius;
+        samples: dropSamples;
+        color: hifi.colors.black;
+        spread: dropSpread;
     }
     Rectangle {
         id: rectRow

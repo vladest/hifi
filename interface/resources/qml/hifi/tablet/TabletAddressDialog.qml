@@ -35,6 +35,7 @@ StackView {
 
     property var tablet: null;
     property bool isDesktop: false;
+    property string title: "";
 
     Component { id: tabletStoryCard; TabletStoryCard {} }
     Component.onCompleted: {
@@ -49,7 +50,7 @@ StackView {
         isDesktop = (typeof desktop !== "undefined");
         tablet = Tablet.getTablet("com.highfidelity.interface.tablet.system");
 
-        if (desktop) {
+        if (isDesktop) {
             root.title = "GOTO";
         }
     }

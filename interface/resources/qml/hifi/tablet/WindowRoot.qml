@@ -48,7 +48,7 @@ Windows.ScrollingWindow {
 
     // used to receive messages from interface script
     function fromScript(message) {
-        if (loader.item.hasOwnProperty("fromScript")) {
+        if (loader.item !== null && loader.item.hasOwnProperty("fromScript")) {
             loader.item.fromScript(message);
         }
     }

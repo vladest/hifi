@@ -24,8 +24,8 @@ import "../../controls" as HifiControls
 Rectangle {
     id: cardRoot
     HifiStyles.HifiConstants { id: hifi }
-    width: parent.width
-    height: parent.height
+    width: parent !== null ? parent.width : undefined;
+    height: parent !== null ? parent.height : undefined;
     property string address: ""
     property alias eventBridge: webview.eventBridge
     function setUrl(url) {

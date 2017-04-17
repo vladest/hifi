@@ -14,7 +14,7 @@
 
 class AbstractHMDScriptingInterface : public QObject {
     Q_OBJECT
-    Q_PROPERTY(bool active READ isHMDMode)
+    Q_PROPERTY(bool active READ isHMDMode CONSTANT)
     Q_PROPERTY(float ipd READ getIPD)
     Q_PROPERTY(float eyeHeight READ getEyeHeight)
     Q_PROPERTY(float playerHeight READ getPlayerHeight)

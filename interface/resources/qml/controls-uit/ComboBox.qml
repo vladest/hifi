@@ -216,7 +216,7 @@ FocusScope {
                         anchors.leftMargin: hifi.dimensions.textPadding
                         anchors.verticalCenter: parent.verticalCenter
                         id: popupText
-                        text: listView.model[index] ? listView.model[index] : (listView.model.get(index).text ? listView.model.get(index).text : "")
+                        text: listView.model[index] ? listView.model[index] : (typeof listView.model.get === "function" && listView.model.get(index).text ? listView.model.get(index).text : "")
                         size: hifi.fontSizes.textFieldInput
                         color: hifi.colors.baseGray
                     }
