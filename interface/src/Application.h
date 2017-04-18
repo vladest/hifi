@@ -687,7 +687,7 @@ private:
     QTimer _addAssetToWorldErrorTimer;
 
     FileScriptingInterface* _fileDownload;
-    QSound *_snapshotSound;
+    QSound* _snapshotSound;
 };
 
 
