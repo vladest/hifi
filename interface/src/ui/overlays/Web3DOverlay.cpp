@@ -255,11 +255,20 @@ void Web3DOverlay::render(RenderArgs* args) {
         _mousePressConnection = connect(&(qApp->getOverlays()), &Overlays::mousePressOnOverlay, this, forwardPointerEvent, Qt::DirectConnection);
         _mouseReleaseConnection = connect(&(qApp->getOverlays()), &Overlays::mouseReleaseOnOverlay, this, forwardPointerEvent, Qt::DirectConnection);
         _mouseMoveConnection = connect(&(qApp->getOverlays()), &Overlays::mouseMoveOnOverlay, this, forwardPointerEvent, Qt::DirectConnection);
+        _hoverLeaveConnection = connect(&(qApp->getOverlays()), &Overlays::hoverEnterOverlay, this, [=](OverlayID overlayID, const PointerEvent& event) {
+            auto self = weakSelf.lock();
+            if (!self) {
+                return;
+            }
+            self->_mouseOver = true;
+        }, Qt::DirectConnection);
+
         _hoverLeaveConnection = connect(&(qApp->getOverlays()), &Overlays::hoverLeaveOverlay, this, [=](OverlayID overlayID, const PointerEvent& event) {
             auto self = weakSelf.lock();
             if (!self) {
                 return;
             }
+            self->_mouseOver = false;
             if (self->_pressed && overlayID == selfOverlayID) {
                 PointerEvent endEvent(PointerEvent::Release, event.getID(), event.getPos2D(), event.getPos3D(), event.getNormal(), event.getDirection(),
                                       event.getButton(), event.getButtons(), event.getKeyboardModifiers());
@@ -613,4 +622,9 @@ void Web3DOverlay::emitScriptEvent(const QVariant& message) {
     } else {
         emit scriptEventReceived(message);
     }
+}
+
+bool Web3DOverlay::getMouseOver() const
+{
+    return _mouseOver;
 }

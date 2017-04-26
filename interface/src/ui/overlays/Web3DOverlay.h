@@ -62,6 +62,8 @@ public:
         Mouse
     };
 
+    bool getMouseOver() const;
+
 public slots:
     void emitScriptEvent(const QVariant& scriptMessage);
 
@@ -82,6 +84,7 @@ private:
     bool _showKeyboardFocusHighlight{ true };
 
     bool _pressed{ false };
+    bool _mouseOver{ false };
     QTouchDevice _touchDevice;
 
     uint8_t _desiredMaxFPS { 10 };

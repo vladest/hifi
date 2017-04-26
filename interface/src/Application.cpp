@@ -3331,7 +3331,11 @@ void Application::wheelEvent(QWheelEvent* event) const {
     }
 
     if (_keyboardMouseDevice->isActive()) {
-        _keyboardMouseDevice->wheelEvent(event);
+        auto overlays = &(qApp->getOverlays());
+        auto overlay = static_cast<Web3DOverlay*>(overlays->getOverlayObject(getTabletScreenID()));
+        if (!overlay || !overlay->getMouseOver()) {
+            _keyboardMouseDevice->wheelEvent(event);
+        }
     }
 }
 
