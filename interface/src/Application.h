@@ -73,6 +73,7 @@
 #include <model/Skybox.h>
 #include <ModelScriptingInterface.h>
 
+#include "Sound.h"
 
 class OffscreenGLCanvas;
 class GLCanvas;
@@ -80,6 +81,7 @@ class FaceTracker;
 class MainWindow;
 class AssetUpload;
 class CompositorHelper;
+class AudioInjector;
 
 namespace controller {
     class StateController;
@@ -135,8 +137,9 @@ public:
 
     enum Event {
         Present = DisplayPlugin::Present,
-        Paint = Present + 1,
-        Lambda = Paint + 1
+        Paint,
+        Idle,
+        Lambda
     };
 
     // FIXME? Empty methods, do we still need them?
@@ -370,6 +373,7 @@ public slots:
     static void showHelp();
 
     void cycleCamera();
+    void cameraModeChanged();
     void cameraMenuChanged();
     void toggleOverlays();
     void setOverlaysVisible(bool visible);
@@ -407,6 +411,7 @@ public slots:
 private slots:
     void showDesktop();
     void clearDomainOctreeDetails();
+    void clearDomainAvatars();
     void aboutToQuit();
 
     void resettingDomain();
@@ -533,6 +538,7 @@ private:
     RateCounter<> _avatarSimCounter;
     RateCounter<> _simCounter;
 
+    QTimer _minimizedWindowTimer;
     QElapsedTimer _timerStart;
     QElapsedTimer _lastTimeUpdated;
 
@@ -683,6 +689,8 @@ private:
     QTimer _addAssetToWorldErrorTimer;
 
     FileScriptingInterface* _fileDownload;
+    AudioInjector* _snapshotSoundInjector { nullptr };
+    SharedSoundPointer _snapshotSound;
 };
 
 

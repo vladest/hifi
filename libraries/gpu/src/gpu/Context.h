@@ -34,6 +34,7 @@ public:
     int _ISNumInputBufferChanges = 0;
     int _ISNumIndexBufferChanges = 0;
 
+    int _RSNumResourceBufferBounded = 0;
     int _RSNumTextureBounded = 0;
     int _RSAmountTextureMemoryBounded = 0;
 
@@ -52,6 +53,9 @@ public:
 class Backend {
 public:
     virtual~ Backend() {};
+
+
+    virtual const std::string& getVersion() const = 0;
 
     void setStereoState(const StereoState& stereo) { _stereo = stereo; }
 
@@ -151,6 +155,8 @@ public:
 
     Context();
     ~Context();
+
+    const std::string& getBackendVersion() const;
 
     void beginFrame(const glm::mat4& renderPose = glm::mat4());
     void appendFrameBatch(Batch& batch);

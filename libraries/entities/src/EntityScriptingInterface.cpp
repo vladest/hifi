@@ -24,8 +24,8 @@
 #include <model-networking/MeshProxy.h>
 
 #include "EntitiesLogging.h"
-#include "EntityActionFactoryInterface.h"
-#include "EntityActionInterface.h"
+#include "EntityDynamicFactoryInterface.h"
+#include "EntityDynamicInterface.h"
 #include "EntitySimulation.h"
 #include "EntityTree.h"
 #include "LightEntityItem.h"
@@ -407,9 +407,11 @@ QUuid EntityScriptingInterface::editEntity(QUuid id, const EntityItemProperties&
     //     return QUuid();
     // }
 
+    bool entityFound { false };
     _entityTree->withReadLock([&] {
         EntityItemPointer entity = _entityTree->findEntityByEntityItemID(entityID);
         if (entity) {
+            entityFound = true;
             // make sure the properties has a type, so that the encode can know which properties to include
             properties.setType(entity->getType());
             bool hasTerseUpdateChanges = properties.hasTerseUpdateChanges();
@@ -464,6 +466,27 @@ QUuid EntityScriptingInterface::editEntity(QUuid id, const EntityItemProperties&
             });
         }
     });
+    if (!entityFound) {
+        // we've made an edit to an entity we don't know about, or to a non-entity.  If it's a known non-entity,
+        // print a warning and don't send an edit packet to the entity-server.
+        QSharedPointer<SpatialParentFinder> parentFinder = DependencyManager::get<SpatialParentFinder>();
+        if (parentFinder) {
+            bool success;
+            auto nestableWP = parentFinder->find(id, success, static_cast<SpatialParentTree*>(_entityTree.get()));
+            if (success) {
+                auto nestable = nestableWP.lock();
+                if (nestable) {
+                    NestableType nestableType = nestable->getNestableType();
+                    if (nestableType == NestableType::Overlay || nestableType == NestableType::Avatar) {
+                        qCWarning(entities) << "attempted edit on non-entity: " << id << nestable->getName();
+                        return QUuid(); // null UUID to indicate failure
+                    }
+                }
+            }
+        }
+    }
+    // we queue edit packets even if we don't know about the entity.  This is to allow AC agents
+    // to edit entities they know only by ID.
     queueEntityMessage(PacketType::EntityEdit, entityID, properties);
     return id;
 }
@@ -1133,7 +1156,7 @@ QUuid EntityScriptingInterface::addAction(const QString& actionTypeString,
     PROFILE_RANGE(script_entities, __FUNCTION__);
 
     QUuid actionID = QUuid::createUuid();
-    auto actionFactory = DependencyManager::get<EntityActionFactoryInterface>();
+    auto actionFactory = DependencyManager::get<EntityDynamicFactoryInterface>();
     bool success = false;
     actionWorker(entityID, [&](EntitySimulationPointer simulation, EntityItemPointer entity) {
         // create this action even if the entity doesn't have physics info.  it will often be the
@@ -1142,11 +1165,11 @@ QUuid EntityScriptingInterface::addAction(const QString& actionTypeString,
         // if (!entity->getPhysicsInfo()) {
         //     return false;
         // }
-        EntityActionType actionType = EntityActionInterface::actionTypeFromString(actionTypeString);
-        if (actionType == ACTION_TYPE_NONE) {
+        EntityDynamicType dynamicType = EntityDynamicInterface::dynamicTypeFromString(actionTypeString);
+        if (dynamicType == DYNAMIC_TYPE_NONE) {
             return false;
         }
-        EntityActionPointer action = actionFactory->factory(actionType, actionID, entity, arguments);
+        EntityDynamicPointer action = actionFactory->factory(dynamicType, actionID, entity, arguments);
         if (!action) {
             return false;
         }
@@ -1513,6 +1536,24 @@ bool EntityScriptingInterface::isChildOfParent(QUuid childID, QUuid parentID) {
     });
 
     return isChild;
+}
+
+QString EntityScriptingInterface::getNestableType(QUuid id) {
+    QSharedPointer<SpatialParentFinder> parentFinder = DependencyManager::get<SpatialParentFinder>();
+    if (!parentFinder) {
+        return "unknown";
+    }
+    bool success;
+    SpatiallyNestableWeakPointer objectWP = parentFinder->find(id, success);
+    if (!success) {
+        return "unknown";
+    }
+    SpatiallyNestablePointer object = objectWP.lock();
+    if (!object) {
+        return "unknown";
+    }
+    NestableType nestableType = object->getNestableType();
+    return SpatiallyNestable::nestableTypeToString(nestableType);
 }
 
 QVector<QUuid> EntityScriptingInterface::getChildrenIDsOfJoint(const QUuid& parentID, int jointIndex) {
