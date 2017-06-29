@@ -37,8 +37,6 @@
 #include <QtQml/QQmlEngine>
 #include <QtQuick/QQuickWindow>
 
-#include <QtWebEngineWidgets/QWebEngineProfile>
-
 #include <QtWidgets/QDesktopWidget>
 #include <QtWidgets/QMessageBox>
 
@@ -99,8 +97,8 @@
 #include <OctalCode.h>
 #include <OctreeSceneStats.h>
 #include <OffscreenUi.h>
-#include <gl/OffscreenQmlSurfaceCache.h>
 #include <gl/OffscreenGLCanvas.h>
+#include <ui/OffscreenQmlSurfaceCache.h>
 #include <PathUtils.h>
 #include <PerfStat.h>
 #include <PhysicsEngine.h>
@@ -125,7 +123,8 @@
 #include <ScriptEngines.h>
 #include <ScriptCache.h>
 #include <SoundCache.h>
-#include <TabletScriptingInterface.h>
+#include <ui/TabletScriptingInterface.h>
+#include <ui/ToolbarScriptingInterface.h>
 #include <Tooltip.h>
 #include <udt/PacketHeaders.h>
 #include <UserActivityLogger.h>
@@ -166,7 +165,6 @@
 #include "scripting/SettingsScriptingInterface.h"
 #include "scripting/WindowScriptingInterface.h"
 #include "scripting/ControllerScriptingInterface.h"
-#include "scripting/ToolbarScriptingInterface.h"
 #include "scripting/RatesScriptingInterface.h"
 #if defined(Q_OS_MAC) || defined(Q_OS_WIN)
 #include "SpeechRecognizer.h"
@@ -215,7 +213,7 @@ static QTimer pingTimer;
 
 static const int MAX_CONCURRENT_RESOURCE_DOWNLOADS = 16;
 
-// For processing on QThreadPool, we target a number of threads after reserving some 
+// For processing on QThreadPool, we target a number of threads after reserving some
 // based on how many are being consumed by the application and the display plugin.  However,
 // we will never drop below the 'min' value
 static const int MIN_PROCESSING_THREAD_POOL_SIZE = 1;
@@ -441,6 +439,11 @@ static const QString STATE_ADVANCED_MOVEMENT_CONTROLS = "AdvancedMovement";
 static const QString STATE_GROUNDED = "Grounded";
 static const QString STATE_NAV_FOCUSED = "NavigationFocused";
 
+// Statically provided display and input plugins
+extern DisplayPluginList getDisplayPlugins();
+extern InputPluginList getInputPlugins();
+extern void saveInputPluginSettings(const InputPluginList& plugins);
+
 bool setupEssentials(int& argc, char** argv, bool runningMarkerExisted) {
     const char** constArgv = const_cast<const char**>(argv);
 
@@ -480,7 +483,12 @@ bool setupEssentials(int& argc, char** argv, bool runningMarkerExisted) {
 
     Setting::init();
 
-    if (auto steamClient = PluginManager::getInstance()->getSteamClientPlugin()) {
+    // Tell the plugin manager about our statically linked plugins
+    auto pluginManager = PluginManager::getInstance();
+    pluginManager->setInputPluginProvider([] { return getInputPlugins(); });
+    pluginManager->setDisplayPluginProvider([] { return getDisplayPlugins(); });
+    pluginManager->setInputPluginSettingsPersister([](const InputPluginList& plugins) { saveInputPluginSettings(plugins); });
+    if (auto steamClient = pluginManager->getSteamClientPlugin()) {
         steamClient->init();
     }
 
@@ -574,6 +582,7 @@ bool setupEssentials(int& argc, char** argv, bool runningMarkerExisted) {
     DependencyManager::set<LocationBookmarks>();
     DependencyManager::set<Snapshot>();
     DependencyManager::set<CloseEventSender>();
+    DependencyManager::set<ResourceManager>();
 
     return previousSessionCrashed;
 }
@@ -713,9 +722,13 @@ Application::Application(int& argc, char** argv, QElapsedTimer& startupTimer, bo
     updateHeartbeat();
 
     // setup a timer for domain-server check ins
-    QTimer* domainCheckInTimer = new QTimer(nodeList.data());
+    QTimer* domainCheckInTimer = new QTimer(this);
     connect(domainCheckInTimer, &QTimer::timeout, nodeList.data(), &NodeList::sendDomainServerCheckIn);
     domainCheckInTimer->start(DOMAIN_SERVER_CHECK_IN_MSECS);
+    connect(this, &QCoreApplication::aboutToQuit, [domainCheckInTimer] {
+        domainCheckInTimer->stop();
+        domainCheckInTimer->deleteLater();
+    });
 
 
     auto audioIO = DependencyManager::get<AudioClient>();
@@ -764,7 +777,6 @@ Application::Application(int& argc, char** argv, QElapsedTimer& startupTimer, bo
     connect(this, &Application::activeDisplayPluginChanged,
         reinterpret_cast<scripting::Audio*>(audioScriptingInterface.data()), &scripting::Audio::onContextChanged);
 
-    ResourceManager::init();
     // Make sure we don't time out during slow operations at startup
     updateHeartbeat();
 
@@ -888,6 +900,20 @@ Application::Application(int& argc, char** argv, QElapsedTimer& startupTimer, bo
         concurrentDownloads = MAX_CONCURRENT_RESOURCE_DOWNLOADS;
     }
     ResourceCache::setRequestLimit(concurrentDownloads);
+
+    // perhaps override the avatar url.  Since we will test later for validity
+    // we don't need to do so here.
+    QString avatarURL = getCmdOption(argc, constArgv, "--avatarURL");
+    _avatarOverrideUrl = QUrl::fromUserInput(avatarURL);
+
+    // If someone specifies both --avatarURL and --replaceAvatarURL,
+    // the replaceAvatarURL wins.  So only set the _overrideUrl if this
+    // does have a non-empty string.
+    QString replaceURL = getCmdOption(argc, constArgv, "--replaceAvatarURL");
+    if (!replaceURL.isEmpty()) {
+        _avatarOverrideUrl = QUrl::fromUserInput(replaceURL);
+        _saveAvatarOverrideUrl = true;
+    }
 
     _glWidget = new GLCanvas();
     getApplicationCompositor().setRenderingWidget(_glWidget);
@@ -1153,7 +1179,21 @@ Application::Application(int& argc, char** argv, QElapsedTimer& startupTimer, bo
     // force the model the look at the correct directory (weird order of operations issue)
     scriptEngines->setScriptsLocation(scriptEngines->getScriptsLocation());
     // do this as late as possible so that all required subsystems are initialized
-    scriptEngines->loadScripts();
+    // If we've overridden the default scripts location, just load default scripts
+    // otherwise, load 'em all
+
+    // we just want to see if --scripts was set, we've already parsed it and done
+    // the change in PathUtils.  Rather than pass that in the constructor, lets just
+    // look (this could be debated)
+    QString scriptsSwitch = QString("--").append(SCRIPTS_SWITCH);
+    QDir defaultScriptsLocation(getCmdOption(argc, constArgv, scriptsSwitch.toStdString().c_str()));
+    if (!defaultScriptsLocation.exists()) {
+        scriptEngines->loadDefaultScripts();
+        scriptEngines->defaultScriptsLocationOverridden(true);
+    } else {
+        scriptEngines->loadScripts();
+    }
+
     // Make sure we don't time out during slow operations at startup
     updateHeartbeat();
 
@@ -1278,7 +1318,7 @@ Application::Application(int& argc, char** argv, QElapsedTimer& startupTimer, bo
     // Add periodic checks to send user activity data
     static int CHECK_NEARBY_AVATARS_INTERVAL_MS = 10000;
     static int NEARBY_AVATAR_RADIUS_METERS = 10;
-    
+
     // setup the stats interval depending on if the 1s faster hearbeat was requested
     static const QString FAST_STATS_ARG = "--fast-heartbeat";
     static int SEND_STATS_INTERVAL_MS = arguments().indexOf(FAST_STATS_ARG) != -1 ? 1000 : 10000;
@@ -1428,10 +1468,10 @@ Application::Application(int& argc, char** argv, QElapsedTimer& startupTimer, bo
 
         _autoSwitchDisplayModeSupportedHMDPlugin = nullptr;
         foreach(DisplayPluginPointer displayPlugin, PluginManager::getInstance()->getDisplayPlugins()) {
-            if (displayPlugin->isHmd() && 
+            if (displayPlugin->isHmd() &&
                 displayPlugin->getSupportsAutoSwitch()) {
                 _autoSwitchDisplayModeSupportedHMDPlugin = displayPlugin;
-                _autoSwitchDisplayModeSupportedHMDPluginName = 
+                _autoSwitchDisplayModeSupportedHMDPluginName =
                     _autoSwitchDisplayModeSupportedHMDPlugin->getName();
                 _previousHMDWornStatus =
                     _autoSwitchDisplayModeSupportedHMDPlugin->isDisplayVisible();
@@ -1683,7 +1723,7 @@ void Application::onAboutToQuit() {
     }
 
     getActiveDisplayPlugin()->deactivate();
-    if (_autoSwitchDisplayModeSupportedHMDPlugin 
+    if (_autoSwitchDisplayModeSupportedHMDPlugin
         && _autoSwitchDisplayModeSupportedHMDPlugin->isSessionActive()) {
         _autoSwitchDisplayModeSupportedHMDPlugin->endSession();
     }
@@ -1752,8 +1792,8 @@ void Application::cleanupBeforeQuit() {
 
     // Cleanup all overlays after the scripts, as scripts might add more
     _overlays.cleanupAllOverlays();
-    // The cleanup process enqueues the transactions but does not process them.  Calling this here will force the actual 
-    // removal of the items.  
+    // The cleanup process enqueues the transactions but does not process them.  Calling this here will force the actual
+    // removal of the items.
     // See https://highfidelity.fogbugz.com/f/cases/5328
     _main3DScene->processTransactionQueue();
 
@@ -1778,6 +1818,8 @@ void Application::cleanupBeforeQuit() {
 #endif
 
     // stop QML
+    DependencyManager::destroy<TabletScriptingInterface>();
+    DependencyManager::destroy<ToolbarScriptingInterface>();
     DependencyManager::destroy<OffscreenUi>();
 
     DependencyManager::destroy<OffscreenQmlSurfaceCache>();
@@ -1839,7 +1881,7 @@ Application::~Application() {
     DependencyManager::destroy<SoundCache>();
     DependencyManager::destroy<OctreeStatsProvider>();
 
-    ResourceManager::cleanup();
+    DependencyManager::get<ResourceManager>()->cleanup();
 
     // remove the NodeList from the DependencyManager
     DependencyManager::destroy<NodeList>();
@@ -4053,7 +4095,10 @@ void Application::init() {
         EntityTreePointer tree = getEntities()->getTree();
         if (auto entity = tree->findEntityByEntityItemID(id)) {
             auto sound = DependencyManager::get<SoundCache>()->getSound(newURL);
-            entity->setCollisionSound(sound);
+            auto renderable = entity->getRenderableInterface();
+            if (renderable) {
+                renderable->setCollisionSound(sound);
+            }
         }
     }, Qt::QueuedConnection);
     connect(getMyAvatar().get(), &MyAvatar::newCollisionSoundURL, this, [this](QUrl newURL) {
@@ -4151,7 +4196,7 @@ void Application::updateMyAvatarLookAtPosition() {
                 lookAtSpot = transformPoint(worldHeadMat, glm::vec3(0.0f, 0.0f, TREE_SCALE));
             } else {
                 lookAtSpot = myAvatar->getHead()->getEyePosition() +
-                    (myAvatar->getHead()->getFinalOrientationInWorldFrame() * glm::vec3(0.0f, 0.0f, TREE_SCALE));
+                    (myAvatar->getHead()->getFinalOrientationInWorldFrame() * glm::vec3(0.0f, 0.0f, -TREE_SCALE));
             }
         }
 
@@ -5248,7 +5293,7 @@ void Application::clearDomainOctreeDetails() {
     skyStage->setBackgroundMode(model::SunSkyStage::SKY_DEFAULT);
 
     _recentlyClearedDomain = true;
-    
+
     DependencyManager::get<AnimationCache>()->clearUnusedResources();
     DependencyManager::get<ModelCache>()->clearUnusedResources();
     DependencyManager::get<SoundCache>()->clearUnusedResources();
@@ -5312,6 +5357,10 @@ void Application::nodeActivated(SharedNodePointer node) {
     if (node->getType() == NodeType::AvatarMixer) {
         // new avatar mixer, send off our identity packet on next update loop
         // Reset skeletonModelUrl if the last server modified our choice.
+        // Override the avatar url (but not model name) here too.
+        if (_avatarOverrideUrl.isValid()) {
+            getMyAvatar()->useFullAvatarURL(_avatarOverrideUrl);
+        }
         static const QUrl empty{};
         if (getMyAvatar()->getFullAvatarURLFromPreferences() != getMyAvatar()->cannonicalSkeletonModelURL(empty)) {
             getMyAvatar()->resetFullAvatarURL();
@@ -5517,7 +5566,15 @@ void Application::registerScriptEngineWithApplicationServices(ScriptEngine* scri
 
     scriptEngine->registerGlobalObject("OffscreenFlags", DependencyManager::get<OffscreenUi>()->getFlags());
     scriptEngine->registerGlobalObject("Desktop", DependencyManager::get<DesktopScriptingInterface>().data());
+
+    qScriptRegisterMetaType(scriptEngine, wrapperToScriptValue<ToolbarProxy>, wrapperFromScriptValue<ToolbarProxy>);
+    qScriptRegisterMetaType(scriptEngine, wrapperToScriptValue<ToolbarButtonProxy>, wrapperFromScriptValue<ToolbarButtonProxy>);
     scriptEngine->registerGlobalObject("Toolbars", DependencyManager::get<ToolbarScriptingInterface>().data());
+
+    qScriptRegisterMetaType(scriptEngine, wrapperToScriptValue<TabletProxy>, wrapperFromScriptValue<TabletProxy>);
+    qScriptRegisterMetaType(scriptEngine, wrapperToScriptValue<TabletButtonProxy>, wrapperFromScriptValue<TabletButtonProxy>);
+    scriptEngine->registerGlobalObject("Tablet", DependencyManager::get<TabletScriptingInterface>().data());
+
 
     DependencyManager::get<TabletScriptingInterface>().data()->setToolbarScriptingInterface(DependencyManager::get<ToolbarScriptingInterface>().data());
 
@@ -5592,7 +5649,6 @@ void Application::registerScriptEngineWithApplicationServices(ScriptEngine* scri
     scriptEngine->registerGlobalObject("EntityScriptServerLog", entityScriptServerLog.data());
     scriptEngine->registerGlobalObject("AvatarInputs", AvatarInputs::getInstance());
 
-
     qScriptRegisterMetaType(scriptEngine, OverlayIDtoScriptValue, OverlayIDfromScriptValue);
 
     // connect this script engines printedMessage signal to the global ScriptEngines these various messages
@@ -5601,6 +5657,7 @@ void Application::registerScriptEngineWithApplicationServices(ScriptEngine* scri
     connect(scriptEngine, &ScriptEngine::warningMessage, DependencyManager::get<ScriptEngines>().data(), &ScriptEngines::onWarningMessage);
     connect(scriptEngine, &ScriptEngine::infoMessage, DependencyManager::get<ScriptEngines>().data(), &ScriptEngines::onInfoMessage);
     connect(scriptEngine, &ScriptEngine::clearDebugWindow, DependencyManager::get<ScriptEngines>().data(), &ScriptEngines::onClearDebugWindow);
+
 }
 
 bool Application::canAcceptURL(const QString& urlString) const {
@@ -5837,7 +5894,7 @@ void Application::showDialog(const QUrl& widgetUrl, const QUrl& tabletUrl, const
 
 void Application::showScriptLogs() {
     auto scriptEngines = DependencyManager::get<ScriptEngines>();
-    QUrl defaultScriptsLoc = defaultScriptsLocation();
+    QUrl defaultScriptsLoc = PathUtils::defaultScriptsLocation();
     defaultScriptsLoc.setPath(defaultScriptsLoc.path() + "developer/debugging/debugWindow.js");
     scriptEngines->loadScript(defaultScriptsLoc.toString());
 }
@@ -5884,7 +5941,7 @@ void Application::addAssetToWorldFromURL(QString url) {
 
     addAssetToWorldInfo(filename, "Downloading model file " + filename + ".");
 
-    auto request = ResourceManager::createResourceRequest(nullptr, QUrl(url));
+    auto request = DependencyManager::get<ResourceManager>()->createResourceRequest(nullptr, QUrl(url));
     connect(request, &ResourceRequest::finished, this, &Application::addAssetToWorldFromURLRequestFinished);
     request->send();
 }
@@ -7065,4 +7122,9 @@ OverlayID Application::getTabletHomeButtonID() const {
 QUuid Application::getTabletFrameID() const {
     auto HMD = DependencyManager::get<HMDScriptingInterface>();
     return HMD->getCurrentTabletFrameID();
+}
+
+void Application::setAvatarOverrideUrl(const QUrl& url, bool save) {
+    _avatarOverrideUrl = url;
+    _saveAvatarOverrideUrl = save;
 }

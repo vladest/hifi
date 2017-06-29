@@ -51,6 +51,7 @@ const QHash<PacketType, PacketType> REPLICATED_PACKET_MAPPING {
     { PacketType::SilentAudioFrame, PacketType::ReplicatedSilentAudioFrame },
     { PacketType::AvatarIdentity, PacketType::ReplicatedAvatarIdentity },
     { PacketType::KillAvatar, PacketType::ReplicatedKillAvatar },
+    { PacketType::BulkAvatarData, PacketType::ReplicatedBulkAvatarData }
 };
 
 PacketVersion versionForPacketType(PacketType packetType) {
@@ -68,7 +69,7 @@ PacketVersion versionForPacketType(PacketType packetType) {
         case PacketType::AvatarData:
         case PacketType::BulkAvatarData:
         case PacketType::KillAvatar:
-            return static_cast<PacketVersion>(AvatarMixerPacketVersion::AvatarIdentitySequenceFront);
+            return static_cast<PacketVersion>(AvatarMixerPacketVersion::IsReplicatedInAvatarIdentity);
         case PacketType::MessagesData:
             return static_cast<PacketVersion>(MessageDataVersion::TextOrBinaryData);
         case PacketType::ICEServerHeartbeat:
