@@ -1,10 +1,8 @@
 //
-//  Audio.qml
-//  qml/hifi/audio
+//  WebBrowser.qml
 //
-//  Audio setup
 //
-//  Created by Vlad Stelmahovsky on 03/22/2017
+//  Created by Vlad Stelmahovsky on 06/22/2017
 //  Copyright 2017 High Fidelity, Inc.
 //
 //  Distributed under the Apache License, Version 2.0.
@@ -16,7 +14,7 @@ import QtQuick.Controls 1.5
 import QtQuick.Layouts 1.3
 import QtQuick.Controls.Styles 1.4
 
-import QtWebEngine 1.3
+import QtWebEngine 1.2
 
 import "../styles-uit"
 import "../controls-uit" as HifiControls
@@ -125,8 +123,9 @@ Rectangle {
             settings.errorPageEnabled: true
             settings.pluginsEnabled: true
             settings.fullScreenSupportEnabled: false
-            settings.autoLoadIconsForPage: false
-            settings.touchIconsEnabled: false
+            //from WebEngine 1.3
+//            settings.autoLoadIconsForPage: false
+//            settings.touchIconsEnabled: false
 
             onCertificateError: {
                 error.defer();
