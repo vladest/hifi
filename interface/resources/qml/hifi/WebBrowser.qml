@@ -41,15 +41,13 @@ Rectangle {
         RowLayout {
             width: parent.width;
             height: 48
-            HifiControls.GlyphButton {
+            HifiControls.WebGlyphButton {
                 glyph: hifi.glyphs.backward;
-                color: hifi.colors.primaryHighlight;
                 anchors.verticalCenter: parent.verticalCenter;
                 size: 38;
             }
-            HifiControls.GlyphButton {
+            HifiControls.WebGlyphButton {
                 glyph: hifi.glyphs.forward;
-                color: hifi.colors.primaryHighlight;
                 anchors.verticalCenter: parent.verticalCenter;
                 width: hifi.dimensions.controlLineHeight
             }
@@ -65,9 +63,8 @@ Rectangle {
                     sourceSize: Qt.size(width, height)
                     source: webEngineView.icon
                 }
-                HifiControls.GlyphButton {
+                HifiControls.WebGlyphButton {
                     glyph: webEngineView.loading ? hifi.glyphs.closeSmall : hifi.glyphs.reloadSmall;
-                    color: hifi.colors.primaryHighlight;
                     anchors.verticalCenter: parent.verticalCenter;
                     width: hifi.dimensions.controlLineHeight
                     z: 2
@@ -85,9 +82,8 @@ Rectangle {
                 text: webEngineView.url
                 onAccepted: webEngineView.url = text
             }
-            HifiControls.GlyphButton {
+            HifiControls.WebGlyphButton {
                 glyph: hifi.glyphs.unmuted;
-                color: hifi.colors.primaryHighlight;
                 anchors.verticalCenter: parent.verticalCenter;
                 width: hifi.dimensions.controlLineHeight
             }
