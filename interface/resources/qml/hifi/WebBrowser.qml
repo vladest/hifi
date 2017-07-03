@@ -136,7 +136,7 @@ Rectangle {
             height: 2
         }
 
-        WebEngineView {
+        HifiControls.BaseWebView {
             id: webEngineView
             focus: true
             objectName: "tabletWebEngineView"
@@ -177,15 +177,6 @@ Rectangle {
 
             userScripts: [ createGlobalEventBridge, raiseAndLowerKeyboard, userScript ]
 
-            onLinkHovered: {
-                //                if (hoveredUrl == "")
-                //                    resetStatusText.start();
-                //                else {
-                //                    resetStatusText.stop();
-                //                    statusText.text = hoveredUrl;
-                //                }
-            }
-
             settings.autoLoadImages: true
             settings.javascriptEnabled: true
             settings.errorPageEnabled: true
@@ -202,11 +193,6 @@ Rectangle {
             Component.onCompleted: {
                 webChannel.registerObject("eventBridge", eventBridge);
                 webChannel.registerObject("eventBridgeWrapper", eventBridgeWrapper);
-                // Ensure the JS from the web-engine makes it to our logging
-                webEngineView.javaScriptConsoleMessage.connect(function(level, message, lineNumber, sourceID) {
-                    console.log("Web Entity JS message: " + sourceID + " " + lineNumber + " " +  message);
-                });
-
                 webEngineView.profile.httpUserAgent = "Mozilla/5.0 Chrome (HighFidelityInterface)";
             }
 
@@ -214,34 +200,9 @@ Rectangle {
                 grantFeaturePermission(securityOrigin, feature, true);
             }
 
-            onLoadingChanged: {
-                // Required to support clicking on "hifi://" links
-                if (WebEngineView.LoadStartedStatus == loadRequest.status) {
-                    var url = loadRequest.url.toString();
-                    if (urlHandler.canHandleUrl(url)) {
-                        if (urlHandler.handleUrl(url)) {
-                            webEngineView.stop();
-                        }
-                    }
-                }
-            }
-
             onNewViewRequested: {
-                if (!request.userInitiated)
+                if (!request.userInitiated) {
                     print("Warning: Blocked a popup window.");
-                else if (request.destination == WebEngineView.NewViewInTab) {
-                    //                    var tab = tabs.createEmptyTab(currentWebView.profile);
-                    //                    tabs.currentIndex = tabs.count - 1;
-                    //                    request.openIn(tab.item);
-                } else if (request.destination == WebEngineView.NewViewInBackgroundTab) {
-                    //                    var backgroundTab = tabs.createEmptyTab(currentWebView.profile);
-                    //                    request.openIn(backgroundTab.item);
-                } else if (request.destination == WebEngineView.NewViewInDialog) {
-                    //                    var dialog = applicationRoot.createDialog(currentWebView.profile);
-                    //                    request.openIn(dialog.currentWebView);
-                } else {
-                    //                    var window = applicationRoot.createWindow(currentWebView.profile);
-                    //                    request.openIn(window.currentWebView);
                 }
             }
 
