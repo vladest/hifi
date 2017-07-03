@@ -160,7 +160,7 @@ Rectangle {
                     }
                 }
 
-                PlaySampleSound { anchors { left: parent.left; leftMargin: 60 }}
+                //PlaySampleSound { anchors { left: parent.left; leftMargin: 60 }}
             }
         }
 
