@@ -10,50 +10,65 @@
 //
 
 import QtQuick 2.5
-import QtQuick.Controls 1.5
+import QtQuick.Controls 1.5 as QQControls
 import QtQuick.Layouts 1.3
 import QtQuick.Controls.Styles 1.4
 
 import QtWebEngine 1.2
+import QtWebChannel 1.0
 
 import "../styles-uit"
 import "../controls-uit" as HifiControls
 import "../windows"
+import "../controls"
 
 Rectangle {
     id: root;
 
     HifiConstants { id: hifi; }
 
-    property var eventBridge;
     property string title: "";
     signal sendToScript(var message);
+    property bool keyboardEnabled: true  // FIXME - Keyboard HMD only: Default to false
+    property bool keyboardRaised: false
+    property bool punctuationMode: false
+
 
     color: hifi.colors.baseGray;
 
     // only show the title if loaded through a "loader"
 
     Column {
-        //y: 16; // padding does not work
         spacing: 2
         width: parent.width;
 
         RowLayout {
             width: parent.width;
             height: 48
+
             HifiControls.WebGlyphButton {
+                enabled: webEngineView.canGoBack
                 glyph: hifi.glyphs.backward;
                 anchors.verticalCenter: parent.verticalCenter;
                 size: 38;
-            }
-            HifiControls.WebGlyphButton {
-                glyph: hifi.glyphs.forward;
-                anchors.verticalCenter: parent.verticalCenter;
-                width: hifi.dimensions.controlLineHeight
+                onClicked: {
+                    webEngineView.goBack()
+                }
             }
 
-            TextField {
+            HifiControls.WebGlyphButton {
+                enabled: webEngineView.canGoForward
+                glyph: hifi.glyphs.forward;
+                anchors.verticalCenter: parent.verticalCenter;
+                size: 38;
+                onClicked: {
+                    webEngineView.goForward()
+                }
+            }
+
+            QQControls.TextField {
                 id: addressBar
+
                 Image {
                     anchors.verticalCenter: addressBar.verticalCenter;
                     x: 5
@@ -63,12 +78,20 @@ Rectangle {
                     sourceSize: Qt.size(width, height)
                     source: webEngineView.icon
                 }
+
                 HifiControls.WebGlyphButton {
                     glyph: webEngineView.loading ? hifi.glyphs.closeSmall : hifi.glyphs.reloadSmall;
                     anchors.verticalCenter: parent.verticalCenter;
                     width: hifi.dimensions.controlLineHeight
                     z: 2
                     x: addressBar.width - 28
+                    onClicked: {
+                        if (webEngineView.loading) {
+                            webEngineView.stop()
+                        } else {
+                            reloadTimer.start()
+                        }
+                    }
                 }
 
                 style: TextFieldStyle {
@@ -83,35 +106,84 @@ Rectangle {
                 onAccepted: webEngineView.url = text
             }
             HifiControls.WebGlyphButton {
-                glyph: hifi.glyphs.unmuted;
+                checkable: true
+                //only QtWebEngine 1.3
+                //checked: webEngineView.audioMuted
+                glyph: checked ? hifi.glyphs.unmuted : hifi.glyphs.muted
                 anchors.verticalCenter: parent.verticalCenter;
                 width: hifi.dimensions.controlLineHeight
+                onClicked: {
+                    webEngineView.triggerWebAction(WebEngineView.ToggleMediaMute)
+                }
+            }
+        }
+
+        QQControls.ProgressBar {
+            id: loadProgressBar
+            style: ProgressBarStyle {
+                background: Rectangle {
+                    color: "#6A6A6A"
+                }
+                progress: Rectangle{
+                    color: "#00B4EF"
+                }
             }
 
-        }
-        ProgressBar {
             width: parent.width;
             minimumValue: 0
             maximumValue: 100
             value: webEngineView.loadProgress
             height: 2
-            id: loadProgress
         }
 
         WebEngineView {
             id: webEngineView
             focus: true
+            objectName: "tabletWebEngineView"
+
             url: "http://www.highfidelity.com"
+            property real webViewHeight: root.height - loadProgressBar.height - 48 - 4
+
             width: parent.width;
-            height: root.height - loadProgress.height - 48 - 4
+            height: keyboardEnabled && keyboardRaised ? webViewHeight - keyboard.height : webViewHeight
+
+            profile: HFTabletWebEngineProfile;
+
+            property string userScriptUrl: ""
+
+            // creates a global EventBridge object.
+            WebEngineScript {
+                id: createGlobalEventBridge
+                sourceCode: eventBridgeJavaScriptToInject
+                injectionPoint: WebEngineScript.DocumentCreation
+                worldId: WebEngineScript.MainWorld
+            }
+
+            // detects when to raise and lower virtual keyboard
+            WebEngineScript {
+                id: raiseAndLowerKeyboard
+                injectionPoint: WebEngineScript.Deferred
+                sourceUrl: resourceDirectoryUrl + "/html/raiseAndLowerKeyboard.js"
+                worldId: WebEngineScript.MainWorld
+            }
+
+            // User script.
+            WebEngineScript {
+                id: userScript
+                sourceUrl: webEngineView.userScriptUrl
+                injectionPoint: WebEngineScript.DocumentReady  // DOM ready but page load may not be finished.
+                worldId: WebEngineScript.MainWorld
+            }
+
+            userScripts: [ createGlobalEventBridge, raiseAndLowerKeyboard, userScript ]
 
             onLinkHovered: {
-//                if (hoveredUrl == "")
-//                    resetStatusText.start();
-//                else {
-//                    resetStatusText.stop();
-//                    statusText.text = hoveredUrl;
-//                }
+                //                if (hoveredUrl == "")
+                //                    resetStatusText.start();
+                //                else {
+                //                    resetStatusText.stop();
+                //                    statusText.text = hoveredUrl;
+                //                }
             }
 
             settings.autoLoadImages: true
@@ -120,20 +192,26 @@ Rectangle {
             settings.pluginsEnabled: true
             settings.fullScreenSupportEnabled: false
             //from WebEngine 1.3
-//            settings.autoLoadIconsForPage: false
-//            settings.touchIconsEnabled: false
+            //            settings.autoLoadIconsForPage: false
+            //            settings.touchIconsEnabled: false
 
             onCertificateError: {
                 error.defer();
-                //sslDialog.enqueue(error);
             }
 
             Component.onCompleted: {
-                console.log("Connecting JS messaging to Hifi Logging")
+                webChannel.registerObject("eventBridge", eventBridge);
+                webChannel.registerObject("eventBridgeWrapper", eventBridgeWrapper);
                 // Ensure the JS from the web-engine makes it to our logging
                 webEngineView.javaScriptConsoleMessage.connect(function(level, message, lineNumber, sourceID) {
-                    console.log("Web Window JS message: " + sourceID + " " + lineNumber + " " +  message);
+                    console.log("Web Entity JS message: " + sourceID + " " + lineNumber + " " +  message);
                 });
+
+                webEngineView.profile.httpUserAgent = "Mozilla/5.0 Chrome (HighFidelityInterface)";
+            }
+
+            onFeaturePermissionRequested: {
+                grantFeaturePermission(securityOrigin, feature, true);
             }
 
             onLoadingChanged: {
@@ -152,18 +230,18 @@ Rectangle {
                 if (!request.userInitiated)
                     print("Warning: Blocked a popup window.");
                 else if (request.destination == WebEngineView.NewViewInTab) {
-//                    var tab = tabs.createEmptyTab(currentWebView.profile);
-//                    tabs.currentIndex = tabs.count - 1;
-//                    request.openIn(tab.item);
+                    //                    var tab = tabs.createEmptyTab(currentWebView.profile);
+                    //                    tabs.currentIndex = tabs.count - 1;
+                    //                    request.openIn(tab.item);
                 } else if (request.destination == WebEngineView.NewViewInBackgroundTab) {
-//                    var backgroundTab = tabs.createEmptyTab(currentWebView.profile);
-//                    request.openIn(backgroundTab.item);
+                    //                    var backgroundTab = tabs.createEmptyTab(currentWebView.profile);
+                    //                    request.openIn(backgroundTab.item);
                 } else if (request.destination == WebEngineView.NewViewInDialog) {
-//                    var dialog = applicationRoot.createDialog(currentWebView.profile);
-//                    request.openIn(dialog.currentWebView);
+                    //                    var dialog = applicationRoot.createDialog(currentWebView.profile);
+                    //                    request.openIn(dialog.currentWebView);
                 } else {
-//                    var window = applicationRoot.createWindow(currentWebView.profile);
-//                    request.openIn(window.currentWebView);
+                    //                    var window = applicationRoot.createWindow(currentWebView.profile);
+                    //                    request.openIn(window.currentWebView);
                 }
             }
 
@@ -198,6 +276,17 @@ Rectangle {
                 repeat: false
                 onTriggered: webEngineView.reload()
             }
+        }
+    }
+
+    HifiControls.Keyboard {
+        id: keyboard
+        raised: parent.keyboardEnabled && parent.keyboardRaised
+        numeric: parent.punctuationMode
+        anchors {
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
         }
     }
 }
