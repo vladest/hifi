@@ -47,6 +47,7 @@
 #include "types/SoundEffect.h"
 
 #include "EntityScriptingInterface.h"
+#include <VariantMapToScriptValue.h>
 
 #include "Logging.h"
 
@@ -1048,19 +1049,25 @@ void OffscreenQmlSurface::emitWebEvent(const QVariant& message) {
         } else if (messageString == LOWER_KEYBOARD) {
             setKeyboardRaised(_currentFocusItem, false);
         } else {
-            qDebug() << "OffscreenQmlSurface::emitWebEvent" << message;
-            const QByteArray &messageba = message.toByteArray();//.replace('\\',' ');
-            if (messageba.contains("id") &&
-                    messageba.contains("update") &&
-                    messageba.contains("properties")) {
-                QJsonObject jsono = QJsonDocument::fromJson(messageba).object();
-                EntityItemID entityItemID = EntityItemID(QUuid(jsono["id"].toString().replace('"',"")));
-                qDebug() << "id" << entityItemID << jsono["id"].toString();
-                QJsonObject jsonprops = jsono["properties"].toObject();
-                EntityItemProperties properties;
-                properties.setDPI(88);
-                auto entityScriptingInterface = DependencyManager::get<EntityScriptingInterface>();
-                entityScriptingInterface->editEntity(entityItemID, /*properties*/jsono["properties"].toVariant());
+            if (message.isValid()) {
+                qDebug() << "OffscreenQmlSurface::emitWebEvent" << message;
+                const QByteArray &messageba = message.toByteArray();//.replace('\\',' ');
+                if (messageba.contains("id") &&
+                        messageba.contains("update") &&
+                        messageba.contains("properties")) {
+                    QScriptEngine scriptEngine;
+                    QJsonObject jsono = QJsonDocument::fromJson(messageba).object();
+                    EntityItemID entityItemID = EntityItemID(QUuid(jsono["id"].toString().replace('"',"")));
+                    qDebug() << "id" << entityItemID << jsono["id"].toString();
+                    QVariant varprops = jsono["properties"].toVariant();
+                    QVariantMap childMap = varprops.toMap();
+                    QScriptValue sval = variantMapToScriptValue(childMap, scriptEngine);
+                    EntityItemProperties properties;
+                    properties.copyFromScriptValue(sval, true);
+                    //properties.setDPI(88);
+                    auto entityScriptingInterface = DependencyManager::get<EntityScriptingInterface>();
+                    entityScriptingInterface->editEntity(entityItemID, properties);
+                }
             }
             emit webEventReceived(message);
         }
