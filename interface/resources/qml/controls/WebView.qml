@@ -23,6 +23,11 @@ Item {
 
     property alias viewProfile: root.profile
 
+    // This is for JS/QML communication, which is unused in a WebWindow,
+    // but not having this here results in spurious warnings about a
+    // missing signal
+    signal sendToScript(var message);
+
     WebEngineView {
         id: root
         objectName: "webEngineView"
