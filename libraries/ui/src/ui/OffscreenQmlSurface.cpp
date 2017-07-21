@@ -1060,10 +1060,10 @@ void OffscreenQmlSurface::emitWebEvent(const QVariant& message) {
                     EntityItemID entityItemID = EntityItemID(QUuid(jsono["id"].toString().replace('"',"")));
                     qDebug() << "id" << entityItemID << jsono["id"].toString();
                     QVariant varprops = jsono["properties"].toVariant();
-                    QVariantMap childMap = varprops.toMap();
-                    QScriptValue sval = variantMapToScriptValue(childMap, scriptEngine);
+//                    QVariantMap childMap = varprops.toMap();
+//                    QScriptValue sval = variantMapToScriptValue(childMap, scriptEngine);
                     EntityItemProperties properties;
-                    properties.copyFromScriptValue(sval, true);
+                    properties.copyFromVariant(varprops, true);
                     //properties.setDPI(88);
                     auto entityScriptingInterface = DependencyManager::get<EntityScriptingInterface>();
                     entityScriptingInterface->editEntity(entityItemID, properties);

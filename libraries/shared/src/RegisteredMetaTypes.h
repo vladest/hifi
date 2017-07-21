@@ -128,7 +128,21 @@ void aaCubeFromScriptValue(const QScriptValue &object, AACube& aaCube);
 void aaCubeFromVariant(const QVariant &object, AACube& aaCube);
 
 template<typename T>
-inline QVector<T> vectorFromVariant(const QVariant& array);
+inline QVector<T> vectorFromVariant(const QVariant& array) {
+    if(!array.isValid()) {
+        return QVector<T>();
+    }
+    const QList<QVariant> &var_list = array.toList();
+    QVector<T> newVector;
+    const int length = var_list.size();
+    newVector.reserve(length);
+    for (int i = 0; i < length; i++) {
+        if(var_list.at(i).isValid()) {
+            newVector << var_list.at(i).value<T>();
+        }
+    }
+    return newVector;
+}
 
 class PickRay {
 public:

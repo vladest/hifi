@@ -368,24 +368,6 @@ QVector<float> qVectorFloatFromScriptValue(const QScriptValue& array) {
     return newVector;
 }
 
-template<typename T>
-inline QVector<T> vectorFromVariant(const QVariant& array) {
-    if(!array.isValid()) {
-        return QVector<T>();
-    }
-    const QList<QVariant> &var_list = array.toList();
-    QVector<T> newVector;
-    const int length = var_list.size();
-    newVector.reserve(length);
-    for (int i = 0; i < length; i++) {
-        if(var_list.at(i).isValid()) {
-            newVector << var_list.at(i).value<T>();
-        }
-    }
-
-    return newVector;
-}
-
 QVector<QUuid> qVectorQUuidFromScriptValue(const QScriptValue& array) {
     if (!array.isArray()) {
         return QVector<QUuid>(); 

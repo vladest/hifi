@@ -14,7 +14,7 @@
 #define hifi_EntityItemPropertiesMacros_h
 
 #include <QDateTime>
-
+#include <QVariant>
 #include "EntityItemID.h"
 #include <RegisteredMetaTypes.h>
 
@@ -191,14 +191,25 @@ typedef QVector<bool> qVectorBool;
 typedef QVector<float> qVectorFloat;
 
 //from QVariant
-inline float float_convertFromVariant(const QVariant& v, bool& isValid) { return v.toFloat(&isValid); }
+inline float float_convertFromVariant(QVariant& v, bool& isValid) {
+    isValid = true;
+    return v.value<float>(); }
+//    v.convert(QVariant::Double);
+//    return v.toFloat(&isValid); }
 inline quint64 quint64_convertFromVariant(const QVariant& v, bool& isValid) { return v.toULongLong(&isValid); }
 inline quint32 quint32_convertFromVariant(const QVariant& v, bool& isValid) {
     // Use QString::toUInt() so that isValid is set to false if the number is outside the quint32 range.
     return v.toUInt(&isValid);
 }
-inline quint16 quint16_convertFromVariant(const QVariant& v, bool& isValid) { return v.toInt(&isValid); }
-inline uint16_t uint16_t_convertFromVariant(const QVariant& v, bool& isValid) { return v.toInt(&isValid); }
+inline quint16 quint16_convertFromVariant(const QVariant& v, bool& isValid) {
+    isValid = true;
+    return static_cast<quint16>(v.value<quint16>());
+    /*return v.toInt(&isValid); */}
+inline uint16_t uint16_t_convertFromVariant(const QVariant& v, bool& isValid) {
+    isValid = true;
+    return static_cast<uint16_t>(v.value<uint16_t>());
+    //return v.toInt(&isValid);
+}
 inline int int_convertFromVariant(const QVariant& v, bool& isValid) { return v.toInt(&isValid); }
 inline bool bool_convertFromVariant(const QVariant& v, bool& isValid) { isValid = true; return v.toBool(); }
 inline uint8_t uint8_t_convertFromVariant(const QVariant& v, bool& isValid) { isValid = true; return (uint8_t)(0xff & v.toInt(&isValid)); }
@@ -422,9 +433,11 @@ inline xColor xColor_convertFromScriptValue(const QScriptValue& v, bool& isValid
 #define COPY_PROPERTY_FROM_VARIANTMAP(P, T, S)                     \
     {                                                                \
         QVariant V = variantmap[#P];                        \
+        qDebug() << "property variant" << V; \
         if (V.isValid()) {                                           \
             bool isValid = false;                                    \
             T newValue = T##_convertFromVariant(V, isValid);     \
+            qDebug() << "new value" << newValue << isValid; \
             if (isValid && (_defaultSettings || newValue != _##P)) { \
                 S(newValue);                                         \
             }                                                        \
