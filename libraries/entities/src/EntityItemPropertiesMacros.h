@@ -189,6 +189,97 @@ typedef QVector<glm::vec3> qVectorVec3;
 typedef QVector<glm::quat> qVectorQuat;
 typedef QVector<bool> qVectorBool;
 typedef QVector<float> qVectorFloat;
+
+//from QVariant
+inline float float_convertFromVariant(const QVariant& v, bool& isValid) { return v.toFloat(&isValid); }
+inline quint64 quint64_convertFromVariant(const QVariant& v, bool& isValid) { return v.toULongLong(&isValid); }
+inline quint32 quint32_convertFromVariant(const QVariant& v, bool& isValid) {
+    // Use QString::toUInt() so that isValid is set to false if the number is outside the quint32 range.
+    return v.toUInt(&isValid);
+}
+inline quint16 quint16_convertFromVariant(const QVariant& v, bool& isValid) { return v.toInt(&isValid); }
+inline uint16_t uint16_t_convertFromVariant(const QVariant& v, bool& isValid) { return v.toInt(&isValid); }
+inline int int_convertFromVariant(const QVariant& v, bool& isValid) { return v.toInt(&isValid); }
+inline bool bool_convertFromVariant(const QVariant& v, bool& isValid) { isValid = true; return v.toBool(); }
+inline uint8_t uint8_t_convertFromVariant(const QVariant& v, bool& isValid) { isValid = true; return (uint8_t)(0xff & v.toInt(&isValid)); }
+inline QString QString_convertFromVariant(const QVariant& v, bool& isValid) { isValid = true; return v.toString().trimmed(); }
+inline QUuid QUuid_convertFromVariant(const QVariant& v, bool& isValid) { isValid = true; return v.toUuid(); }
+inline EntityItemID EntityItemID_convertFromVariant(const QVariant& v, bool& isValid) { isValid = true; return v.toUuid(); }
+
+inline QDateTime QDateTime_convertFromVariant(const QVariant& v, bool& isValid) {
+    isValid = true;
+    auto result = QDateTime::fromString(v.toString().trimmed(), Qt::ISODate);
+    // result.setTimeSpec(Qt::OffsetFromUTC);
+    return result;
+}
+
+
+
+inline QByteArray QByteArray_convertFromVariant(const QVariant& v, bool& isValid) {
+    isValid = true;
+    QString b64 = v.toString().trimmed();
+    return QByteArray::fromBase64(b64.toUtf8());
+}
+
+inline glmVec3 glmVec3_convertFromVariant(const QVariant& v, bool& isValid) {
+    isValid = false; /// assume it can't be converted
+    const QVariantMap &qvmap = v.toMap();
+    QVariant x = qvmap["x"];
+    QVariant y = qvmap["y"];
+    QVariant z = qvmap["z"];
+    if (x.isValid() && y.isValid() && z.isValid()) {
+        glm::vec3 newValue(0);
+        newValue.x = x.toFloat();
+        newValue.y = y.toFloat();
+        newValue.z = z.toFloat();
+        isValid = !glm::isnan(newValue.x) &&
+                  !glm::isnan(newValue.y) &&
+                  !glm::isnan(newValue.z);
+        if (isValid) {
+            return newValue;
+        }
+    }
+    return glm::vec3(0);
+}
+
+inline AACube AACube_convertFromVariant(const QVariant& v, bool& isValid) {
+    isValid = true;
+    AACube result;
+    aaCubeFromVariant(v, result);
+    return result;
+}
+
+inline qVectorFloat qVectorFloat_convertFromVariant(const QVariant& v, bool& isValid) {
+    isValid = true;
+    return vectorFromVariant<float>(v);
+}
+
+inline qVectorVec3 qVectorVec3_convertFromVariant(const QVariant& v, bool& isValid) {
+    isValid = true;
+    return vectorFromVariant<glm::vec3>(v);
+}
+
+inline qVectorQuat qVectorQuat_convertFromVariant(const QVariant& v, bool& isValid) {
+    isValid = true;
+    return vectorFromVariant<glm::quat>(v);
+}
+
+inline qVectorBool qVectorBool_convertFromVariant(const QVariant& v, bool& isValid) {
+    isValid = true;
+    return vectorFromVariant<bool>(v);
+}
+
+inline glmQuat glmQuat_convertFromVariant(const QVariant& v, bool& isValid) {
+    isValid = false; /// assume it can't be converted
+    return quatFromVariant(v, isValid);
+}
+
+inline xColor xColor_convertFromVariant(const QVariant& v, bool& isValid) {
+    return xColorFromVariant(v, isValid);
+}
+
+
+//from QScriptValue
 inline float float_convertFromScriptValue(const QScriptValue& v, bool& isValid) { return v.toVariant().toFloat(&isValid); }
 inline quint64 quint64_convertFromScriptValue(const QScriptValue& v, bool& isValid) { return v.toVariant().toULongLong(&isValid); }
 inline quint32 quint32_convertFromScriptValue(const QScriptValue& v, bool& isValid) {
@@ -322,6 +413,18 @@ inline xColor xColor_convertFromScriptValue(const QScriptValue& v, bool& isValid
         if (V.isValid()) {                                           \
             bool isValid = false;                                    \
             T newValue = T##_convertFromScriptValue(V, isValid);     \
+            if (isValid && (_defaultSettings || newValue != _##P)) { \
+                S(newValue);                                         \
+            }                                                        \
+        }                                                            \
+    }
+
+#define COPY_PROPERTY_FROM_VARIANTMAP(P, T, S)                     \
+    {                                                                \
+        QVariant V = variantmap[#P];                        \
+        if (V.isValid()) {                                           \
+            bool isValid = false;                                    \
+            T newValue = T##_convertFromVariant(V, isValid);     \
             if (isValid && (_defaultSettings || newValue != _##P)) { \
                 S(newValue);                                         \
             }                                                        \

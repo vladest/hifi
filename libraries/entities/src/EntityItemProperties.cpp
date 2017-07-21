@@ -743,6 +743,154 @@ void EntityItemProperties::copyFromScriptValue(const QScriptValue& object, bool 
     _lastEdited = usecTimestampNow();
 }
 
+void EntityItemProperties::copyFromVariant(const QVariant& object, bool honorReadOnly) {
+//    QScriptValue typeScriptValue = object.property("type");
+//    if (typeScriptValue.isValid()) {
+//        setType(typeScriptValue.toVariant().toString());
+//    }
+    const QVariantMap& variantmap = object.toMap();
+
+    COPY_PROPERTY_FROM_VARIANTMAP(lastEditedBy, QUuid, setLastEditedBy);
+    COPY_PROPERTY_FROM_VARIANTMAP(position, glmVec3, setPosition);
+    COPY_PROPERTY_FROM_VARIANTMAP(dimensions, glmVec3, setDimensions);
+    COPY_PROPERTY_FROM_VARIANTMAP(rotation, glmQuat, setRotation);
+    COPY_PROPERTY_FROM_VARIANTMAP(density, float, setDensity);
+    COPY_PROPERTY_FROM_VARIANTMAP(velocity, glmVec3, setVelocity);
+    COPY_PROPERTY_FROM_VARIANTMAP(gravity, glmVec3, setGravity);
+    COPY_PROPERTY_FROM_VARIANTMAP(acceleration, glmVec3, setAcceleration);
+    COPY_PROPERTY_FROM_VARIANTMAP(damping, float, setDamping);
+    COPY_PROPERTY_FROM_VARIANTMAP(restitution, float, setRestitution);
+    COPY_PROPERTY_FROM_VARIANTMAP(friction, float, setFriction);
+    COPY_PROPERTY_FROM_VARIANTMAP(lifetime, float, setLifetime);
+    COPY_PROPERTY_FROM_VARIANTMAP(script, QString, setScript);
+    COPY_PROPERTY_FROM_VARIANTMAP(scriptTimestamp, quint64, setScriptTimestamp);
+    COPY_PROPERTY_FROM_VARIANTMAP(serverScripts, QString, setServerScripts);
+    COPY_PROPERTY_FROM_VARIANTMAP(registrationPoint, glmVec3, setRegistrationPoint);
+    COPY_PROPERTY_FROM_VARIANTMAP(angularVelocity, glmVec3, setAngularVelocity);
+    COPY_PROPERTY_FROM_VARIANTMAP(angularDamping, float, setAngularDamping);
+    COPY_PROPERTY_FROM_VARIANTMAP(visible, bool, setVisible);
+    COPY_PROPERTY_FROM_VARIANTMAP(color, xColor, setColor);
+    COPY_PROPERTY_FROM_VARIANTMAP(colorSpread, xColor, setColorSpread);
+    COPY_PROPERTY_FROM_VARIANTMAP(colorStart, xColor, setColorStart);
+    COPY_PROPERTY_FROM_VARIANTMAP(colorFinish, xColor, setColorFinish);
+    COPY_PROPERTY_FROM_VARIANTMAP(alpha, float, setAlpha);
+    COPY_PROPERTY_FROM_VARIANTMAP(alphaSpread, float, setAlphaSpread);
+    COPY_PROPERTY_FROM_VARIANTMAP(alphaStart, float, setAlphaStart);
+    COPY_PROPERTY_FROM_VARIANTMAP(alphaFinish, float, setAlphaFinish);
+    COPY_PROPERTY_FROM_VARIANTMAP(emitterShouldTrail , bool, setEmitterShouldTrail);
+    COPY_PROPERTY_FROM_VARIANTMAP(modelURL, QString, setModelURL);
+    COPY_PROPERTY_FROM_VARIANTMAP(compoundShapeURL, QString, setCompoundShapeURL);
+    COPY_PROPERTY_FROM_VARIANTMAP(localRenderAlpha, float, setLocalRenderAlpha);
+    COPY_PROPERTY_FROM_VARIANTMAP(collisionless, bool, setCollisionless);
+    //COPY_PROPERTY_FROM_QSCRIPTVALUE_GETTER(ignoreForCollisions, bool, setCollisionless, getCollisionless); // legacy support
+    COPY_PROPERTY_FROM_VARIANTMAP(collisionMask, uint8_t, setCollisionMask);
+    //COPY_PROPERTY_FROM_QSCRITPTVALUE_ENUM(collidesWith, CollisionMask);
+    //COPY_PROPERTY_FROM_QSCRIPTVALUE_GETTER(collisionsWillMove, bool, setDynamic, getDynamic); // legacy support
+    COPY_PROPERTY_FROM_VARIANTMAP(dynamic, bool, setDynamic);
+    COPY_PROPERTY_FROM_VARIANTMAP(isSpotlight, bool, setIsSpotlight);
+    COPY_PROPERTY_FROM_VARIANTMAP(intensity, float, setIntensity);
+    COPY_PROPERTY_FROM_VARIANTMAP(falloffRadius, float, setFalloffRadius);
+    COPY_PROPERTY_FROM_VARIANTMAP(exponent, float, setExponent);
+    COPY_PROPERTY_FROM_VARIANTMAP(cutoff, float, setCutoff);
+    COPY_PROPERTY_FROM_VARIANTMAP(locked, bool, setLocked);
+    COPY_PROPERTY_FROM_VARIANTMAP(textures, QString, setTextures);
+    COPY_PROPERTY_FROM_VARIANTMAP(userData, QString, setUserData);
+    COPY_PROPERTY_FROM_VARIANTMAP(text, QString, setText);
+    COPY_PROPERTY_FROM_VARIANTMAP(lineHeight, float, setLineHeight);
+    COPY_PROPERTY_FROM_VARIANTMAP(textColor, xColor, setTextColor);
+    COPY_PROPERTY_FROM_VARIANTMAP(backgroundColor, xColor, setBackgroundColor);
+    //COPY_PROPERTY_FROM_QSCRITPTVALUE_ENUM(shapeType, ShapeType);
+    COPY_PROPERTY_FROM_VARIANTMAP(maxParticles, quint32, setMaxParticles);
+    COPY_PROPERTY_FROM_VARIANTMAP(lifespan, float, setLifespan);
+    COPY_PROPERTY_FROM_VARIANTMAP(isEmitting, bool, setIsEmitting);
+    COPY_PROPERTY_FROM_VARIANTMAP(emitRate, float, setEmitRate);
+    COPY_PROPERTY_FROM_VARIANTMAP(emitSpeed, float, setEmitSpeed);
+    COPY_PROPERTY_FROM_VARIANTMAP(speedSpread, float, setSpeedSpread);
+    COPY_PROPERTY_FROM_VARIANTMAP(emitOrientation, glmQuat, setEmitOrientation);
+    COPY_PROPERTY_FROM_VARIANTMAP(emitDimensions, glmVec3, setEmitDimensions);
+    COPY_PROPERTY_FROM_VARIANTMAP(emitRadiusStart, float, setEmitRadiusStart);
+    COPY_PROPERTY_FROM_VARIANTMAP(polarStart, float, setPolarStart);
+    COPY_PROPERTY_FROM_VARIANTMAP(polarFinish, float, setPolarFinish);
+    COPY_PROPERTY_FROM_VARIANTMAP(azimuthStart, float, setAzimuthStart);
+    COPY_PROPERTY_FROM_VARIANTMAP(azimuthFinish, float, setAzimuthFinish);
+    COPY_PROPERTY_FROM_VARIANTMAP(emitAcceleration, glmVec3, setEmitAcceleration);
+    COPY_PROPERTY_FROM_VARIANTMAP(accelerationSpread, glmVec3, setAccelerationSpread);
+    COPY_PROPERTY_FROM_VARIANTMAP(particleRadius, float, setParticleRadius);
+    COPY_PROPERTY_FROM_VARIANTMAP(radiusSpread, float, setRadiusSpread);
+    COPY_PROPERTY_FROM_VARIANTMAP(radiusStart, float, setRadiusStart);
+    COPY_PROPERTY_FROM_VARIANTMAP(radiusFinish, float, setRadiusFinish);
+    COPY_PROPERTY_FROM_VARIANTMAP(marketplaceID, QString, setMarketplaceID);
+    COPY_PROPERTY_FROM_VARIANTMAP(name, QString, setName);
+    COPY_PROPERTY_FROM_VARIANTMAP(collisionSoundURL, QString, setCollisionSoundURL);
+
+    //COPY_PROPERTY_FROM_QSCRITPTVALUE_ENUM(backgroundMode, BackgroundMode);
+    COPY_PROPERTY_FROM_VARIANTMAP(sourceUrl, QString, setSourceUrl);
+    COPY_PROPERTY_FROM_VARIANTMAP(voxelVolumeSize, glmVec3, setVoxelVolumeSize);
+    COPY_PROPERTY_FROM_VARIANTMAP(voxelData, QByteArray, setVoxelData);
+    COPY_PROPERTY_FROM_VARIANTMAP(voxelSurfaceStyle, uint16_t, setVoxelSurfaceStyle);
+    COPY_PROPERTY_FROM_VARIANTMAP(lineWidth, float, setLineWidth);
+    COPY_PROPERTY_FROM_VARIANTMAP(linePoints, qVectorVec3, setLinePoints);
+    COPY_PROPERTY_FROM_VARIANTMAP(href, QString, setHref);
+    COPY_PROPERTY_FROM_VARIANTMAP(description, QString, setDescription);
+    COPY_PROPERTY_FROM_VARIANTMAP(faceCamera, bool, setFaceCamera);
+    COPY_PROPERTY_FROM_VARIANTMAP(actionData, QByteArray, setActionData);
+    COPY_PROPERTY_FROM_VARIANTMAP(normals, qVectorVec3, setNormals);
+    COPY_PROPERTY_FROM_VARIANTMAP(strokeWidths,qVectorFloat, setStrokeWidths);
+
+//    if (!honorReadOnly) {
+//        // this is used by the json reader to set things that we don't want javascript to able to affect.
+//        COPY_PROPERTY_FROM_QSCRIPTVALUE_GETTER(created, QDateTime, setCreated, [this]() {
+//                auto result = QDateTime::fromMSecsSinceEpoch(_created / 1000, Qt::UTC); // usec per msec
+//                return result;
+//            });
+//        // TODO: expose this to QScriptValue for JSON saves?
+//        //COPY_PROPERTY_FROM_QSCRIPTVALUE(simulationOwner, ???, setSimulatorPriority);
+//    }
+
+//    _animation.copyFromScriptValue(object, _defaultSettings);
+//    _keyLight.copyFromScriptValue(object, _defaultSettings);
+//    _skybox.copyFromScriptValue(object, _defaultSettings);
+//    _stage.copyFromScriptValue(object, _defaultSettings);
+
+    COPY_PROPERTY_FROM_VARIANTMAP(xTextureURL, QString, setXTextureURL);
+    COPY_PROPERTY_FROM_VARIANTMAP(yTextureURL, QString, setYTextureURL);
+    COPY_PROPERTY_FROM_VARIANTMAP(zTextureURL, QString, setZTextureURL);
+
+    COPY_PROPERTY_FROM_VARIANTMAP(xNNeighborID, EntityItemID, setXNNeighborID);
+    COPY_PROPERTY_FROM_VARIANTMAP(yNNeighborID, EntityItemID, setYNNeighborID);
+    COPY_PROPERTY_FROM_VARIANTMAP(zNNeighborID, EntityItemID, setZNNeighborID);
+
+    COPY_PROPERTY_FROM_VARIANTMAP(xPNeighborID, EntityItemID, setXPNeighborID);
+    COPY_PROPERTY_FROM_VARIANTMAP(yPNeighborID, EntityItemID, setYPNeighborID);
+    COPY_PROPERTY_FROM_VARIANTMAP(zPNeighborID, EntityItemID, setZPNeighborID);
+
+    COPY_PROPERTY_FROM_VARIANTMAP(parentID, QUuid, setParentID);
+    COPY_PROPERTY_FROM_VARIANTMAP(parentJointIndex, quint16, setParentJointIndex);
+    COPY_PROPERTY_FROM_VARIANTMAP(queryAACube, AACube, setQueryAACube);
+
+    COPY_PROPERTY_FROM_VARIANTMAP(localPosition, glmVec3, setLocalPosition);
+    COPY_PROPERTY_FROM_VARIANTMAP(localRotation, glmQuat, setLocalRotation);
+    COPY_PROPERTY_FROM_VARIANTMAP(localVelocity, glmVec3, setLocalVelocity);
+    COPY_PROPERTY_FROM_VARIANTMAP(localAngularVelocity, glmVec3, setLocalAngularVelocity);
+
+    COPY_PROPERTY_FROM_VARIANTMAP(jointRotationsSet, qVectorBool, setJointRotationsSet);
+    COPY_PROPERTY_FROM_VARIANTMAP(jointRotations, qVectorQuat, setJointRotations);
+    COPY_PROPERTY_FROM_VARIANTMAP(jointTranslationsSet, qVectorBool, setJointTranslationsSet);
+    COPY_PROPERTY_FROM_VARIANTMAP(jointTranslations, qVectorVec3, setJointTranslations);
+    COPY_PROPERTY_FROM_VARIANTMAP(shape, QString, setShape);
+
+    COPY_PROPERTY_FROM_VARIANTMAP(flyingAllowed, bool, setFlyingAllowed);
+    COPY_PROPERTY_FROM_VARIANTMAP(ghostingAllowed, bool, setGhostingAllowed);
+    COPY_PROPERTY_FROM_VARIANTMAP(filterURL, QString, setFilterURL);
+
+    COPY_PROPERTY_FROM_VARIANTMAP(clientOnly, bool, setClientOnly);
+    COPY_PROPERTY_FROM_VARIANTMAP(owningAvatarID, QUuid, setOwningAvatarID);
+
+    COPY_PROPERTY_FROM_VARIANTMAP(dpi, uint16_t, setDPI);
+
+    _lastEdited = usecTimestampNow();
+}
+
 void EntityItemProperties::merge(const EntityItemProperties& other) {
     COPY_PROPERTY_IF_CHANGED(lastEditedBy);
     COPY_PROPERTY_IF_CHANGED(position);

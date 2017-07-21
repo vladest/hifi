@@ -125,6 +125,11 @@ QVector<QUuid> qVectorQUuidFromScriptValue(const QScriptValue& array);
 QScriptValue aaCubeToScriptValue(QScriptEngine* engine, const AACube& aaCube);
 void aaCubeFromScriptValue(const QScriptValue &object, AACube& aaCube);
 
+void aaCubeFromVariant(const QVariant &object, AACube& aaCube);
+
+template<typename T>
+inline QVector<T> vectorFromVariant(const QVariant& array);
+
 class PickRay {
 public:
     PickRay() : origin(0.0f), direction(0.0f)  { }

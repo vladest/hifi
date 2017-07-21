@@ -368,6 +368,24 @@ QVector<float> qVectorFloatFromScriptValue(const QScriptValue& array) {
     return newVector;
 }
 
+template<typename T>
+inline QVector<T> vectorFromVariant(const QVariant& array) {
+    if(!array.isValid()) {
+        return QVector<T>();
+    }
+    const QList<QVariant> &var_list = array.toList();
+    QVector<T> newVector;
+    const int length = var_list.size();
+    newVector.reserve(length);
+    for (int i = 0; i < length; i++) {
+        if(var_list.at(i).isValid()) {
+            newVector << var_list.at(i).value<T>();
+        }
+    }
+
+    return newVector;
+}
+
 QVector<QUuid> qVectorQUuidFromScriptValue(const QScriptValue& array) {
     if (!array.isArray()) {
         return QVector<QUuid>(); 
@@ -429,6 +447,19 @@ QVector<glm::vec3> qVectorVec3FromScriptValue(const QScriptValue& array){
     }
     return newVector;
 }
+
+//QVector<glm::vec3> qVectorVec3FromVariant(const QVariant& array){
+//    QVector<glm::vec3> newVector;
+//    int length = array.property("length").toInteger();
+
+//    for (int i = 0; i < length; i++) {
+//        glm::vec3 newVec3 = glm::vec3();
+//        vec3FromScriptValue(array.property(i), newVec3);
+//        newVector << newVec3;
+//    }
+//    return newVector;
+//}
+
 
 void qVectorVec3FromScriptValue(const QScriptValue& array, QVector<glm::vec3>& vector ) {
     int length = array.property("length").toInteger();
@@ -691,6 +722,17 @@ void aaCubeFromScriptValue(const QScriptValue &object, AACube& aaCube) {
     corner.y = object.property("y").toVariant().toFloat();
     corner.z = object.property("z").toVariant().toFloat();
     float scale = object.property("scale").toVariant().toFloat();
+
+    aaCube.setBox(corner, scale);
+}
+
+void aaCubeFromVariant(const QVariant &object, AACube& aaCube) {
+    glm::vec3 corner;
+    const QVariantMap qvmap = object.toMap();
+    corner.x = qvmap["x"].toFloat();
+    corner.y = qvmap["y"].toFloat();
+    corner.z = qvmap["z"].toFloat();
+    float scale = qvmap["scale"].toFloat();
 
     aaCube.setBox(corner, scale);
 }
