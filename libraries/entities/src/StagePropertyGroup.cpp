@@ -55,6 +55,26 @@ void StagePropertyGroup::copyFromScriptValue(const QScriptValue& object, bool& _
     COPY_GROUP_PROPERTY_FROM_QSCRIPTVALUE(stage, automaticHourDay, bool, setAutomaticHourDay);
 }
 
+void StagePropertyGroup::copyFromVariant(const QVariant &object, bool &_defaultSettings)
+{
+    const QVariantMap& variantmap = object.toMap();
+    // Backward compatibility support for the old way of doing stage properties
+    COPY_PROPERTY_FROM_VARIANTMAP_GETTER(stageSunModelEnabled, bool, setSunModelEnabled, getSunModelEnabled);
+    COPY_PROPERTY_FROM_VARIANTMAP_GETTER(stageLatitude, float, setLatitude, getLatitude);
+    COPY_PROPERTY_FROM_VARIANTMAP_GETTER(stageLongitude, float, setLongitude, getLongitude);
+    COPY_PROPERTY_FROM_VARIANTMAP_GETTER(stageAltitude, float, setAltitude, getAltitude);
+    COPY_PROPERTY_FROM_VARIANTMAP_GETTER(stageDay, uint16_t, setDay, getDay);
+    COPY_PROPERTY_FROM_VARIANTMAP_GETTER(stageHour, float, setHour, getHour);
+
+    COPY_GROUP_PROPERTY_FROM_VARIANTMAP(stage, sunModelEnabled, bool, setSunModelEnabled);
+    COPY_GROUP_PROPERTY_FROM_VARIANTMAP(stage, latitude, float, setLatitude);
+    COPY_GROUP_PROPERTY_FROM_VARIANTMAP(stage, longitude, float, setLongitude);
+    COPY_GROUP_PROPERTY_FROM_VARIANTMAP(stage, altitude, float, setAltitude);
+    COPY_GROUP_PROPERTY_FROM_VARIANTMAP(stage, day, uint16_t, setDay);
+    COPY_GROUP_PROPERTY_FROM_VARIANTMAP(stage, hour, float, setHour);
+    COPY_GROUP_PROPERTY_FROM_VARIANTMAP(stage, automaticHourDay, bool, setAutomaticHourDay);
+}
+
 void StagePropertyGroup::merge(const StagePropertyGroup& other) {
     COPY_PROPERTY_IF_CHANGED(sunModelEnabled);
     COPY_PROPERTY_IF_CHANGED(latitude);

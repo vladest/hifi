@@ -39,6 +39,8 @@ public:
                                    EntityItemProperties& defaultEntityProperties) const override;
     virtual void copyFromScriptValue(const QScriptValue& object, bool& _defaultSettings) override;
 
+    void copyFromVariant(const QVariant &object, bool &_defaultSettings);
+
     void merge(const AnimationPropertyGroup& other);
 
     virtual void debugDump() const override;
@@ -86,7 +88,6 @@ public:
     DEFINE_PROPERTY(PROP_ANIMATION_FIRST_FRAME, FirstFrame, firstFrame, float, 0.0f); // was animationSettings.firstFrame
     DEFINE_PROPERTY(PROP_ANIMATION_LAST_FRAME, LastFrame, lastFrame, float, AnimationLoop::MAXIMUM_POSSIBLE_FRAME); // was animationSettings.lastFrame
     DEFINE_PROPERTY(PROP_ANIMATION_HOLD, Hold, hold, bool, false); // was animationSettings.hold
-
 protected:
     void setFromOldAnimationSettings(const QString& value);
 

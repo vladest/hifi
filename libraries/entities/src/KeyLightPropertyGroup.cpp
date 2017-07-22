@@ -48,6 +48,23 @@ void KeyLightPropertyGroup::copyFromScriptValue(const QScriptValue& object, bool
     COPY_PROPERTY_FROM_QSCRIPTVALUE_GETTER(keyLightDirection, glmVec3, setDirection, getDirection);
 }
 
+void KeyLightPropertyGroup::copyFromVariant(const QVariant& object, bool& _defaultSettings) {
+
+    const QVariantMap& variantmap = object.toMap();
+
+    COPY_GROUP_PROPERTY_FROM_VARIANTMAP(keyLight, color, xColor, setColor);
+    COPY_GROUP_PROPERTY_FROM_VARIANTMAP(keyLight, intensity, float, setIntensity);
+    COPY_GROUP_PROPERTY_FROM_VARIANTMAP(keyLight, ambientIntensity, float, setAmbientIntensity);
+    COPY_GROUP_PROPERTY_FROM_VARIANTMAP(keyLight, direction, glmVec3, setDirection);
+    COPY_GROUP_PROPERTY_FROM_VARIANTMAP(keyLight, ambientURL, QString, setAmbientURL);
+
+    // legacy property support
+    COPY_PROPERTY_FROM_VARIANTMAP_GETTER(keyLightColor, xColor, setColor, getColor);
+    COPY_PROPERTY_FROM_VARIANTMAP_GETTER(keyLightIntensity, float, setIntensity, getIntensity);
+    COPY_PROPERTY_FROM_VARIANTMAP_GETTER(keyLightAmbientIntensity, float, setAmbientIntensity, getAmbientIntensity);
+    COPY_PROPERTY_FROM_VARIANTMAP_GETTER(keyLightDirection, glmVec3, setDirection, getDirection);
+}
+
 void KeyLightPropertyGroup::merge(const KeyLightPropertyGroup& other) {
     COPY_PROPERTY_IF_CHANGED(color);
     COPY_PROPERTY_IF_CHANGED(intensity);

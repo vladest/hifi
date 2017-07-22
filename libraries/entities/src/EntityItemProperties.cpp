@@ -743,12 +743,10 @@ void EntityItemProperties::copyFromScriptValue(const QScriptValue& object, bool 
     _lastEdited = usecTimestampNow();
 }
 
-void EntityItemProperties::copyFromVariant(const QVariant& object, bool honorReadOnly) {
-//    QScriptValue typeScriptValue = object.property("type");
-//    if (typeScriptValue.isValid()) {
-//        setType(typeScriptValue.toVariant().toString());
-//    }
+void EntityItemProperties::copyFromVariant(const QVariant& object, const QString& type, bool honorReadOnly) {
     const QVariantMap& variantmap = object.toMap();
+
+    setType(type);
 
     COPY_PROPERTY_FROM_VARIANTMAP(lastEditedBy, QUuid, setLastEditedBy);
     COPY_PROPERTY_FROM_VARIANTMAP(position, glmVec3, setPosition);
@@ -782,10 +780,10 @@ void EntityItemProperties::copyFromVariant(const QVariant& object, bool honorRea
     COPY_PROPERTY_FROM_VARIANTMAP(compoundShapeURL, QString, setCompoundShapeURL);
     COPY_PROPERTY_FROM_VARIANTMAP(localRenderAlpha, float, setLocalRenderAlpha);
     COPY_PROPERTY_FROM_VARIANTMAP(collisionless, bool, setCollisionless);
-    //COPY_PROPERTY_FROM_QSCRIPTVALUE_GETTER(ignoreForCollisions, bool, setCollisionless, getCollisionless); // legacy support
+    COPY_PROPERTY_FROM_VARIANTMAP_GETTER(ignoreForCollisions, bool, setCollisionless, getCollisionless); // legacy support
     COPY_PROPERTY_FROM_VARIANTMAP(collisionMask, uint8_t, setCollisionMask);
-    //COPY_PROPERTY_FROM_QSCRITPTVALUE_ENUM(collidesWith, CollisionMask);
-    //COPY_PROPERTY_FROM_QSCRIPTVALUE_GETTER(collisionsWillMove, bool, setDynamic, getDynamic); // legacy support
+    COPY_PROPERTY_FROM_VARIANTMAP_ENUM(collidesWith, CollisionMask);
+    COPY_PROPERTY_FROM_VARIANTMAP_GETTER(collisionsWillMove, bool, setDynamic, getDynamic); // legacy support
     COPY_PROPERTY_FROM_VARIANTMAP(dynamic, bool, setDynamic);
     COPY_PROPERTY_FROM_VARIANTMAP(isSpotlight, bool, setIsSpotlight);
     COPY_PROPERTY_FROM_VARIANTMAP(intensity, float, setIntensity);
@@ -799,7 +797,7 @@ void EntityItemProperties::copyFromVariant(const QVariant& object, bool honorRea
     COPY_PROPERTY_FROM_VARIANTMAP(lineHeight, float, setLineHeight);
     COPY_PROPERTY_FROM_VARIANTMAP(textColor, xColor, setTextColor);
     COPY_PROPERTY_FROM_VARIANTMAP(backgroundColor, xColor, setBackgroundColor);
-    //COPY_PROPERTY_FROM_QSCRITPTVALUE_ENUM(shapeType, ShapeType);
+    COPY_PROPERTY_FROM_VARIANTMAP_ENUM(shapeType, ShapeType);
     COPY_PROPERTY_FROM_VARIANTMAP(maxParticles, quint32, setMaxParticles);
     COPY_PROPERTY_FROM_VARIANTMAP(lifespan, float, setLifespan);
     COPY_PROPERTY_FROM_VARIANTMAP(isEmitting, bool, setIsEmitting);
@@ -823,7 +821,7 @@ void EntityItemProperties::copyFromVariant(const QVariant& object, bool honorRea
     COPY_PROPERTY_FROM_VARIANTMAP(name, QString, setName);
     COPY_PROPERTY_FROM_VARIANTMAP(collisionSoundURL, QString, setCollisionSoundURL);
 
-    //COPY_PROPERTY_FROM_QSCRITPTVALUE_ENUM(backgroundMode, BackgroundMode);
+    COPY_PROPERTY_FROM_VARIANTMAP_ENUM(backgroundMode, BackgroundMode);
     COPY_PROPERTY_FROM_VARIANTMAP(sourceUrl, QString, setSourceUrl);
     COPY_PROPERTY_FROM_VARIANTMAP(voxelVolumeSize, glmVec3, setVoxelVolumeSize);
     COPY_PROPERTY_FROM_VARIANTMAP(voxelData, QByteArray, setVoxelData);
@@ -837,20 +835,20 @@ void EntityItemProperties::copyFromVariant(const QVariant& object, bool honorRea
     COPY_PROPERTY_FROM_VARIANTMAP(normals, qVectorVec3, setNormals);
     COPY_PROPERTY_FROM_VARIANTMAP(strokeWidths,qVectorFloat, setStrokeWidths);
 
-//    if (!honorReadOnly) {
-//        // this is used by the json reader to set things that we don't want javascript to able to affect.
-//        COPY_PROPERTY_FROM_QSCRIPTVALUE_GETTER(created, QDateTime, setCreated, [this]() {
-//                auto result = QDateTime::fromMSecsSinceEpoch(_created / 1000, Qt::UTC); // usec per msec
-//                return result;
-//            });
-//        // TODO: expose this to QScriptValue for JSON saves?
-//        //COPY_PROPERTY_FROM_QSCRIPTVALUE(simulationOwner, ???, setSimulatorPriority);
-//    }
+    if (!honorReadOnly) {
+        // this is used by the json reader to set things that we don't want javascript to able to affect.
+        COPY_PROPERTY_FROM_VARIANTMAP_GETTER(created, QDateTime, setCreated, [this]() {
+                auto result = QDateTime::fromMSecsSinceEpoch(_created / 1000, Qt::UTC); // usec per msec
+                return result;
+            });
+        // TODO: expose this to QScriptValue for JSON saves?
+        //COPY_PROPERTY_FROM_QSCRIPTVALUE(simulationOwner, ???, setSimulatorPriority);
+    }
 
-//    _animation.copyFromScriptValue(object, _defaultSettings);
-//    _keyLight.copyFromScriptValue(object, _defaultSettings);
-//    _skybox.copyFromScriptValue(object, _defaultSettings);
-//    _stage.copyFromScriptValue(object, _defaultSettings);
+    _animation.copyFromVariant(object, _defaultSettings);
+    _keyLight.copyFromVariant(object, _defaultSettings);
+    _skybox.copyFromVariant(object, _defaultSettings);
+    _stage.copyFromVariant(object, _defaultSettings);
 
     COPY_PROPERTY_FROM_VARIANTMAP(xTextureURL, QString, setXTextureURL);
     COPY_PROPERTY_FROM_VARIANTMAP(yTextureURL, QString, setYTextureURL);

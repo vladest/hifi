@@ -76,8 +76,48 @@ void AnimationPropertyGroup::copyFromScriptValue(const QScriptValue& object, boo
         COPY_PROPERTY_FROM_QSCRIPTVALUE_GETTER(animationIsPlaying, bool, setRunning, getRunning);
         COPY_PROPERTY_FROM_QSCRIPTVALUE_GETTER(animationFrameIndex, float, setCurrentFrame, getCurrentFrame);
     }
-
 }
+
+void AnimationPropertyGroup::copyFromVariant(const QVariant &object, bool &_defaultSettings)
+{
+    const QVariantMap& variantmap = object.toMap();
+
+    COPY_GROUP_PROPERTY_FROM_VARIANTMAP(animation, url, QString, setURL);
+
+    // legacy property support
+    COPY_PROPERTY_FROM_VARIANTMAP_GETTER(animationURL, QString, setURL, getURL);
+    COPY_PROPERTY_FROM_VARIANTMAP_NOCHECK(animationSettings, QString, setFromOldAnimationSettings);
+
+    if (_animationLoop) {
+        COPY_GROUP_PROPERTY_FROM_VARIANTMAP(animation, fps, float, _animationLoop->setFPS);
+        COPY_GROUP_PROPERTY_FROM_VARIANTMAP(animation, currentFrame, float, _animationLoop->setCurrentFrame);
+        COPY_GROUP_PROPERTY_FROM_VARIANTMAP(animation, running, bool, _animationLoop->setRunning);
+        COPY_GROUP_PROPERTY_FROM_VARIANTMAP(animation, loop, bool, _animationLoop->setLoop);
+        COPY_GROUP_PROPERTY_FROM_VARIANTMAP(animation, firstFrame, float, _animationLoop->setFirstFrame);
+        COPY_GROUP_PROPERTY_FROM_VARIANTMAP(animation, lastFrame, float, _animationLoop->setLastFrame);
+        COPY_GROUP_PROPERTY_FROM_VARIANTMAP(animation, hold, bool, _animationLoop->setHold);
+
+        // legacy property support
+        COPY_PROPERTY_FROM_VARIANTMAP_GETTER(animationFPS, float, _animationLoop->setFPS, _animationLoop->getFPS);
+        COPY_PROPERTY_FROM_VARIANTMAP_GETTER(animationIsPlaying, bool, _animationLoop->setRunning, _animationLoop->getRunning);
+        COPY_PROPERTY_FROM_VARIANTMAP_GETTER(animationFrameIndex, float, _animationLoop->setCurrentFrame, _animationLoop->getCurrentFrame);
+
+    } else {
+        COPY_GROUP_PROPERTY_FROM_VARIANTMAP(animation, fps, float, setFPS);
+        COPY_GROUP_PROPERTY_FROM_VARIANTMAP(animation, currentFrame, float, setCurrentFrame);
+        COPY_GROUP_PROPERTY_FROM_VARIANTMAP(animation, running, bool, setRunning);
+        COPY_GROUP_PROPERTY_FROM_VARIANTMAP(animation, loop, bool, setLoop);
+        COPY_GROUP_PROPERTY_FROM_VARIANTMAP(animation, firstFrame, float, setFirstFrame);
+        COPY_GROUP_PROPERTY_FROM_VARIANTMAP(animation, lastFrame, float, setLastFrame);
+        COPY_GROUP_PROPERTY_FROM_VARIANTMAP(animation, hold, bool, setHold);
+
+        // legacy property support
+        COPY_PROPERTY_FROM_VARIANTMAP_GETTER(animationFPS, float, setFPS, getFPS);
+        COPY_PROPERTY_FROM_VARIANTMAP_GETTER(animationIsPlaying, bool, setRunning, getRunning);
+        COPY_PROPERTY_FROM_VARIANTMAP_GETTER(animationFrameIndex, float, setCurrentFrame, getCurrentFrame);
+    }
+}
+
 
 void AnimationPropertyGroup::merge(const AnimationPropertyGroup& other) {
     COPY_PROPERTY_IF_CHANGED(url);

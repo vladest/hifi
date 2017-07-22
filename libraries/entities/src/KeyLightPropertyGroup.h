@@ -35,6 +35,8 @@ public:
                                    EntityItemProperties& defaultEntityProperties) const override;
     virtual void copyFromScriptValue(const QScriptValue& object, bool& _defaultSettings) override;
 
+    void copyFromVariant(const QVariant &object, bool &_defaultSettings);
+
     void merge(const KeyLightPropertyGroup& other);
 
     virtual void debugDump() const override;

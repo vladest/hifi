@@ -192,27 +192,75 @@ typedef QVector<float> qVectorFloat;
 
 //from QVariant
 inline float float_convertFromVariant(QVariant& v, bool& isValid) {
-    isValid = true;
-    return v.value<float>(); }
-//    v.convert(QVariant::Double);
-//    return v.toFloat(&isValid); }
-inline quint64 quint64_convertFromVariant(const QVariant& v, bool& isValid) { return v.toULongLong(&isValid); }
+    float val = v.toFloat(&isValid);
+    if (!isValid) { //fallback thru float
+        isValid = true;
+        val = static_cast<float>(qvariant_cast<float>(v));
+    }
+    return val;
+}
+
+inline quint64 quint64_convertFromVariant(const QVariant& v, bool& isValid) {
+    quint64 val = v.toULongLong(&isValid);
+    if (!isValid) { //fallback thru double
+        isValid = true;
+        val = static_cast<quint64>(qvariant_cast<double>(v));
+    }
+    return val;
+}
+
 inline quint32 quint32_convertFromVariant(const QVariant& v, bool& isValid) {
     // Use QString::toUInt() so that isValid is set to false if the number is outside the quint32 range.
-    return v.toUInt(&isValid);
+    quint32 val =  v.toUInt(&isValid);
+    if (!isValid) { //fallback thru float
+        isValid = true;
+        val = static_cast<quint32>(qvariant_cast<float>(v));
+    }
+    return val;
 }
-inline quint16 quint16_convertFromVariant(const QVariant& v, bool& isValid) {
-    isValid = true;
-    return static_cast<quint16>(v.value<quint16>());
-    /*return v.toInt(&isValid); */}
-inline uint16_t uint16_t_convertFromVariant(const QVariant& v, bool& isValid) {
-    isValid = true;
-    return static_cast<uint16_t>(v.value<uint16_t>());
-    //return v.toInt(&isValid);
+
+inline quint16 quint16_convertFromVariant(QVariant& v, bool& isValid) {
+    quint16 val = static_cast<quint16>(v.toUInt(&isValid));
+    if (!isValid) { //fallback thru float
+        isValid = true;
+        val = static_cast<quint16>(qvariant_cast<float>(v));
+    }
+    return val;
 }
-inline int int_convertFromVariant(const QVariant& v, bool& isValid) { return v.toInt(&isValid); }
-inline bool bool_convertFromVariant(const QVariant& v, bool& isValid) { isValid = true; return v.toBool(); }
-inline uint8_t uint8_t_convertFromVariant(const QVariant& v, bool& isValid) { isValid = true; return (uint8_t)(0xff & v.toInt(&isValid)); }
+
+inline uint16_t uint16_t_convertFromVariant(QVariant& v, bool& isValid) {
+    uint16_t val = static_cast<uint16_t>(v.toUInt(&isValid));
+    if (!isValid) { //fallback thru float
+        isValid = true;
+        val = static_cast<uint16_t>(qvariant_cast<float>(v));
+    }
+    return val;
+}
+
+inline int int_convertFromVariant(const QVariant& v, bool& isValid) {
+    int val =  v.toInt(&isValid);
+    if (!isValid) { //fallback thru float
+        isValid = true;
+        val = static_cast<int>(qvariant_cast<float>(v));
+    }
+    return val;
+}
+
+inline bool bool_convertFromVariant(const QVariant& v, bool& isValid) {
+    isValid = true;
+    return v.toBool();
+}
+
+inline uint8_t uint8_t_convertFromVariant(const QVariant& v, bool& isValid) {
+    isValid = true;
+    uint8_t val = static_cast<uint8_t>(0xff & v.toInt(&isValid));
+    if (!isValid) { //fallback thru float
+        isValid = true;
+        val = static_cast<uint8_t>(qvariant_cast<float>(v)) & 0xff;
+    }
+    return val;
+}
+
 inline QString QString_convertFromVariant(const QVariant& v, bool& isValid) { isValid = true; return v.toString().trimmed(); }
 inline QUuid QUuid_convertFromVariant(const QVariant& v, bool& isValid) { isValid = true; return v.toUuid(); }
 inline EntityItemID EntityItemID_convertFromVariant(const QVariant& v, bool& isValid) { isValid = true; return v.toUuid(); }
@@ -223,8 +271,6 @@ inline QDateTime QDateTime_convertFromVariant(const QVariant& v, bool& isValid) 
     // result.setTimeSpec(Qt::OffsetFromUTC);
     return result;
 }
-
-
 
 inline QByteArray QByteArray_convertFromVariant(const QVariant& v, bool& isValid) {
     isValid = true;
@@ -416,8 +462,6 @@ inline xColor xColor_convertFromScriptValue(const QScriptValue& v, bool& isValid
     }                               \
 }
 
-
-
 #define COPY_PROPERTY_FROM_QSCRIPTVALUE(P, T, S)                     \
     {                                                                \
         QScriptValue V = object.property(#P);                        \
@@ -430,18 +474,16 @@ inline xColor xColor_convertFromScriptValue(const QScriptValue& v, bool& isValid
         }                                                            \
     }
 
-#define COPY_PROPERTY_FROM_VARIANTMAP(P, T, S)                     \
-    {                                                                \
-        QVariant V = variantmap[#P];                        \
-        qDebug() << "property variant" << V; \
-        if (V.isValid()) {                                           \
-            bool isValid = false;                                    \
-            T newValue = T##_convertFromVariant(V, isValid);     \
-            qDebug() << "new value" << newValue << isValid; \
-            if (isValid && (_defaultSettings || newValue != _##P)) { \
-                S(newValue);                                         \
-            }                                                        \
-        }                                                            \
+#define COPY_PROPERTY_FROM_VARIANTMAP(P, T, S)                      \
+    {                                                               \
+        QVariant V = variantmap[#P];                                \
+        if (V.isValid()) {                                          \
+            bool isValid = false;                                   \
+            T newValue = T##_convertFromVariant(V, isValid);        \
+            if (isValid && (_defaultSettings || newValue != _##P)) {\
+                S(newValue);                                        \
+            }                                                       \
+        }                                                           \
     }
 
 #define COPY_PROPERTY_FROM_QSCRIPTVALUE_GETTER(P, T, S, G)      \
@@ -456,6 +498,19 @@ inline xColor xColor_convertFromScriptValue(const QScriptValue& v, bool& isValid
     }                                                           \
 }
 
+#define COPY_PROPERTY_FROM_VARIANTMAP_GETTER(P, T, S, G)            \
+    {                                                               \
+        QVariant V = variantmap[#P];                                \
+        if (V.isValid()) {                                          \
+            bool isValid = false;                                   \
+            T newValue = T##_convertFromVariant(V, isValid);        \
+            if (isValid && (_defaultSettings || newValue != G())) { \
+                S(newValue);                                        \
+            }                                                       \
+        }                                                           \
+    }
+
+
 #define COPY_PROPERTY_FROM_QSCRIPTVALUE_NOCHECK(P, T, S)     \
 {                                                            \
     QScriptValue V = object.property(#P);                    \
@@ -467,6 +522,18 @@ inline xColor xColor_convertFromScriptValue(const QScriptValue& v, bool& isValid
         }                                                    \
     }                                                        \
 }
+
+#define COPY_PROPERTY_FROM_VARIANTMAP_NOCHECK(P, T, S)       \
+    {                                                        \
+        QVariant V = variantmap[#P];                         \
+        if (V.isValid()) {                                   \
+            bool isValid = false;                            \
+            T newValue = T##_convertFromVariant(V, isValid); \
+            if (isValid && (_defaultSettings)) {             \
+                S(newValue);                                 \
+            }                                                \
+        }                                                    \
+    }
 
 #define COPY_GROUP_PROPERTY_FROM_QSCRIPTVALUE(G, P, T, S)                \
     {                                                                    \
@@ -483,6 +550,21 @@ inline xColor xColor_convertFromScriptValue(const QScriptValue& v, bool& isValid
         }                                                                \
     }
 
+#define COPY_GROUP_PROPERTY_FROM_VARIANTMAP(G, P, T, S)                \
+    {                                                                    \
+        QVariant G = variantmap[#G];                            \
+        if (G.isValid()) {                                               \
+            QVariant V = G.toMap()[#P];                             \
+            if (V.isValid()) {                                           \
+                bool isValid = false;                                    \
+                T newValue = T##_convertFromVariant(V, isValid);     \
+                if (isValid && (_defaultSettings || newValue != _##P)) { \
+                    S(newValue);                                         \
+                }                                                        \
+            }                                                            \
+        }                                                                \
+    }
+
 #define COPY_PROPERTY_FROM_QSCRITPTVALUE_ENUM(P, S)               \
     QScriptValue P = object.property(#P);                         \
     if (P.isValid()) {                                            \
@@ -490,6 +572,15 @@ inline xColor xColor_convertFromScriptValue(const QScriptValue& v, bool& isValid
         if (_defaultSettings || newValue != get##S##AsString()) { \
             set##S##FromString(newValue);                         \
         }                                                         \
+    }
+
+#define COPY_PROPERTY_FROM_VARIANTMAP_ENUM(P, S)                    \
+    QVariant P = variantmap[#P];                                    \
+    if (P.isValid()) {                                              \
+        QString newValue = P.toString();                            \
+        if (_defaultSettings || newValue != get##S##AsString()) {   \
+            set##S##FromString(newValue);                           \
+        }                                                           \
     }
 
 #define DEFINE_PROPERTY_GROUP(N, n, T)           \

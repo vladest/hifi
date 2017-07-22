@@ -17,6 +17,9 @@
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrentRun>
 
+#include <QJsonDocument>
+#include <QJsonObject>
+
 #include <shared/QtHelpers.h>
 #include <VariantMapToScriptValue.h>
 #include <SharedUtil.h>
@@ -59,6 +62,23 @@ void EntityScriptingInterface::resetActivityTracking() {
     _activityTracking.addedEntityCount = 0;
     _activityTracking.deletedEntityCount = 0;
     _activityTracking.editedEntityCount = 0;
+}
+
+void EntityScriptingInterface::parseEntityMessage(const QVariant &message) {
+    if (message.isValid()) {
+        const QByteArray &messageba = message.toByteArray();
+        if (messageba.contains("id") &&
+                messageba.contains("update") &&
+                messageba.contains("properties")) {
+            QJsonObject jsono = QJsonDocument::fromJson(messageba).object();
+            EntityItemID entityItemID = EntityItemID(QUuid(jsono["id"].toString().replace('"',"")));
+            QVariant varprops = jsono["properties"].toVariant();
+            QString type = jsono["type"].toString();
+            EntityItemProperties properties;
+            properties.copyFromVariant(varprops, type, true);
+            editEntity(entityItemID, properties);
+        }
+    }
 }
 
 bool EntityScriptingInterface::canAdjustLocks() {

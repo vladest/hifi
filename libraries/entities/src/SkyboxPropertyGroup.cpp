@@ -27,6 +27,13 @@ void SkyboxPropertyGroup::copyFromScriptValue(const QScriptValue& object, bool& 
     COPY_GROUP_PROPERTY_FROM_QSCRIPTVALUE(skybox, url, QString, setURL);
 }
 
+void SkyboxPropertyGroup::copyFromVariant(const QVariant& object, bool& _defaultSettings) {
+    const QVariantMap& variantmap = object.toMap();
+
+    COPY_GROUP_PROPERTY_FROM_VARIANTMAP(skybox, color, xColor, setColor);
+    COPY_GROUP_PROPERTY_FROM_VARIANTMAP(skybox, url, QString, setURL);
+}
+
 void SkyboxPropertyGroup::merge(const SkyboxPropertyGroup& other) {
     COPY_PROPERTY_IF_CHANGED(color);
     COPY_PROPERTY_IF_CHANGED(url);

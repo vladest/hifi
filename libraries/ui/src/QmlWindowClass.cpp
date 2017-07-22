@@ -26,6 +26,8 @@
 #include <shared/QtHelpers.h>
 #include "OffscreenUi.h"
 
+#include "EntityScriptingInterface.h"
+
 static const char* const SOURCE_PROPERTY = "source";
 static const char* const TITLE_PROPERTY = "title";
 static const char* const EVENT_BRIDGE_PROPERTY = "eventBridge";
@@ -186,6 +188,9 @@ void QmlWindowClass::emitWebEvent(const QVariant& webMessage) {
         } else if (messageString == LOWER_KEYBOARD) {
             setKeyboardRaised(asQuickItem(), false);
         } else {
+            auto entityScriptingInterface = DependencyManager::get<EntityScriptingInterface>();
+            entityScriptingInterface->parseEntityMessage(webMessage);
+
             emit webEventReceived(webMessage);
         }
     }
