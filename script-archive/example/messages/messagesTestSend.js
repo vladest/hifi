@@ -2,7 +2,7 @@ var messageIndex = 1;
 
 var messageRate = 500;
 function sendMessage(){
-//    print('SENDING MESSAGE')
+    print('SENDING MESSAGE')
 Messages.sendMessage('messageTest',messageIndex)
 messageIndex++;
 }

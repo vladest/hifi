@@ -78,8 +78,7 @@ void AnimationPropertyGroup::copyFromScriptValue(const QScriptValue& object, boo
     }
 }
 
-void AnimationPropertyGroup::copyFromVariant(const QVariant &object, bool &_defaultSettings)
-{
+void AnimationPropertyGroup::copyFromVariant(const QVariant& object, bool &_defaultSettings) {
     const QVariantMap& variantmap = object.toMap();
 
     COPY_GROUP_PROPERTY_FROM_VARIANTMAP(animation, url, QString, setURL);

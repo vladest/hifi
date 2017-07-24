@@ -25,9 +25,9 @@ DisplayPluginList getDisplayPlugins() {
     DisplayPlugin* PLUGIN_POOL[] = {
         new Basic2DWindowOpenGLDisplayPlugin(),
         new DebugHmdDisplayPlugin(),
-//#ifdef DEBUG
-//        new NullDisplayPlugin(),
-//#endif
+#ifdef DEBUG
+        new NullDisplayPlugin(),
+#endif
         // Stereo modes
         // SBS left/right
         new SideBySideStereoDisplayPlugin(),

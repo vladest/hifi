@@ -305,7 +305,7 @@ public:
     bool getRenderInfoHasTransparent() const { return _renderInfoHasTransparent; }
     void setRenderInfoHasTransparent(bool value) { _renderInfoHasTransparent = value; }
 
-    protected:
+protected:
     QString getCollisionMaskAsString() const;
     void setCollisionMaskFromString(const QString& maskString);
 

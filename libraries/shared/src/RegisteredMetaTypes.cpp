@@ -430,18 +430,17 @@ QVector<glm::vec3> qVectorVec3FromScriptValue(const QScriptValue& array){
     return newVector;
 }
 
-//QVector<glm::vec3> qVectorVec3FromVariant(const QVariant& array){
-//    QVector<glm::vec3> newVector;
-//    int length = array.property("length").toInteger();
+QVector<glm::vec3> qVectorVec3FromVariant(const QVariant& array){
+    QVector<glm::vec3> newVector;
+    const QVariantList& variantList = array.toList();
+    const int length = variantList.size();
 
-//    for (int i = 0; i < length; i++) {
-//        glm::vec3 newVec3 = glm::vec3();
-//        vec3FromScriptValue(array.property(i), newVec3);
-//        newVector << newVec3;
-//    }
-//    return newVector;
-//}
-
+    for (int i = 0; i < length; i++) {
+        glm::vec3 newVec3 = vec3FromVariant(variantList.at(i));
+        newVector << newVec3;
+    }
+    return newVector;
+}
 
 void qVectorVec3FromScriptValue(const QScriptValue& array, QVector<glm::vec3>& vector ) {
     int length = array.property("length").toInteger();
