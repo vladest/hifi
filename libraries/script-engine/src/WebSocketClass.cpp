@@ -87,7 +87,6 @@ void WebSocketClass::handleOnError(QAbstractSocket::SocketError error) {
 }
 
 void WebSocketClass::handleOnMessage(const QString& message) {
-    qDebug() << "vladest. message" << message;
     if (_onMessageEvent.isFunction()) {
         QScriptValueList args;
         QScriptValue arg = _engine->newObject();
