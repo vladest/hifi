@@ -55,7 +55,7 @@ void StagePropertyGroup::copyFromScriptValue(const QScriptValue& object, bool& _
     COPY_GROUP_PROPERTY_FROM_QSCRIPTVALUE(stage, automaticHourDay, bool, setAutomaticHourDay);
 }
 
-void StagePropertyGroup::copyFromVariant(const QVariant &object, bool &_defaultSettings)
+void StagePropertyGroup::copyFromVariant(const QVariant& object, bool& _defaultSettings)
 {
     const QVariantMap& variantmap = object.toMap();
     // Backward compatibility support for the old way of doing stage properties

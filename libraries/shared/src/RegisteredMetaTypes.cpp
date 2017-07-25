@@ -697,7 +697,7 @@ QScriptValue aaCubeToScriptValue(QScriptEngine* engine, const AACube& aaCube) {
     return obj;
 }
 
-void aaCubeFromScriptValue(const QScriptValue &object, AACube& aaCube) {
+void aaCubeFromScriptValue(const QScriptValue& object, AACube& aaCube) {
     glm::vec3 corner;
     corner.x = object.property("x").toVariant().toFloat();
     corner.y = object.property("y").toVariant().toFloat();
@@ -707,7 +707,7 @@ void aaCubeFromScriptValue(const QScriptValue &object, AACube& aaCube) {
     aaCube.setBox(corner, scale);
 }
 
-void aaCubeFromVariant(const QVariant &object, AACube& aaCube) {
+void aaCubeFromVariant(const QVariant& object, AACube& aaCube) {
     glm::vec3 corner;
     const QVariantMap qvmap = object.toMap();
     corner.x = qvmap["x"].toFloat();

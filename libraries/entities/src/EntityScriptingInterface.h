@@ -104,7 +104,7 @@ public:
 
     void resetActivityTracking();
     ActivityTracking getActivityTracking() const { return _activityTracking; }
-    void parseEntityMessage(const QVariant &message);
+    void parseEntityMessage(const QVariant& message);
 
 public slots:
 

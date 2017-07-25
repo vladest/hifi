@@ -64,7 +64,7 @@ void EntityScriptingInterface::resetActivityTracking() {
     _activityTracking.editedEntityCount = 0;
 }
 
-void EntityScriptingInterface::parseEntityMessage(const QVariant &message) {
+void EntityScriptingInterface::parseEntityMessage(const QVariant& message) {
     if (message.isValid()) {
         const QByteArray &messageba = message.toByteArray();
         if (messageba.contains("id") &&

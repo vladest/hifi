@@ -123,9 +123,9 @@ void qVectorIntFromScriptValue(const QScriptValue& array, QVector<uint32_t>& vec
 QVector<QUuid> qVectorQUuidFromScriptValue(const QScriptValue& array);
 
 QScriptValue aaCubeToScriptValue(QScriptEngine* engine, const AACube& aaCube);
-void aaCubeFromScriptValue(const QScriptValue &object, AACube& aaCube);
+void aaCubeFromScriptValue(const QScriptValue& object, AACube& aaCube);
 
-void aaCubeFromVariant(const QVariant &object, AACube& aaCube);
+void aaCubeFromVariant(const QVariant& object, AACube& aaCube);
 
 template<typename T>
 inline QVector<T> vectorFromVariant(const QVariant& array) {
