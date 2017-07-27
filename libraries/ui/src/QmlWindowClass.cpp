@@ -188,8 +188,8 @@ void QmlWindowClass::emitWebEvent(const QVariant& webMessage) {
         } else if (messageString == LOWER_KEYBOARD) {
             setKeyboardRaised(asQuickItem(), false);
         } else {
-            auto entityScriptingInterface = DependencyManager::get<EntityScriptingInterface>();
-            entityScriptingInterface->parseEntityMessage(webMessage);
+//            auto entityScriptingInterface = DependencyManager::get<EntityScriptingInterface>();
+//            entityScriptingInterface->parseEntityMessage(webMessage);
 
             emit webEventReceived(webMessage);
         }

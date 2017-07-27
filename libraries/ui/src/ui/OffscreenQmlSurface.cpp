@@ -1048,8 +1048,8 @@ void OffscreenQmlSurface::emitWebEvent(const QVariant& message) {
         } else if (messageString == LOWER_KEYBOARD) {
             setKeyboardRaised(_currentFocusItem, false);
         } else {
-            auto entityScriptingInterface = DependencyManager::get<EntityScriptingInterface>();
-            entityScriptingInterface->parseEntityMessage(message);
+//            auto entityScriptingInterface = DependencyManager::get<EntityScriptingInterface>();
+//            entityScriptingInterface->parseEntityMessage(message);
 
             emit webEventReceived(message);
         }
