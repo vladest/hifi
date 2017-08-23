@@ -78,7 +78,6 @@ Item {
                 console.log("Web Entity JS message: " + sourceID + " " + lineNumber + " " +  message);
             });
 
-            root.profile.httpUserAgent = "Mozilla/5.0 Chrome (HighFidelityInterface)";
         }
 
         onFeaturePermissionRequested: {

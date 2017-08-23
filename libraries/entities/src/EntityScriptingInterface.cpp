@@ -241,7 +241,7 @@ QUuid EntityScriptingInterface::addEntity(const EntityItemProperties& properties
         _entityTree->withWriteLock([&] {
             EntityItemPointer entity = _entityTree->addEntity(id, propertiesWithSimID);
             if (entity) {
-                if (propertiesWithSimID.parentRelatedPropertyChanged()) {
+                if (propertiesWithSimID.queryAACubeRelatedPropertyChanged()) {
                     // due to parenting, the server may not know where something is in world-space, so include the bounding cube.
                     bool success;
                     AACube queryAACube = entity->getQueryAACube(success);
@@ -455,7 +455,7 @@ QUuid EntityScriptingInterface::editEntity(QUuid id, const EntityItemProperties&
                     entity->rememberHasSimulationOwnershipBid();
                 }
             }
-            if (properties.parentRelatedPropertyChanged() && entity->computePuffedQueryAACube()) {
+            if (properties.queryAACubeRelatedPropertyChanged()) {
                 properties.setQueryAACube(entity->getQueryAACube());
             }
             entity->setLastBroadcast(usecTimestampNow());
@@ -465,7 +465,7 @@ QUuid EntityScriptingInterface::editEntity(QUuid id, const EntityItemProperties&
             // if they've changed.
             entity->forEachDescendant([&](SpatiallyNestablePointer descendant) {
                 if (descendant->getNestableType() == NestableType::Entity) {
-                    if (descendant->computePuffedQueryAACube()) {
+                    if (descendant->checkAndMaybeUpdateQueryAACube()) {
                         EntityItemPointer entityDescendant = std::static_pointer_cast<EntityItem>(descendant);
                         EntityItemProperties newQueryCubeProperties;
                         newQueryCubeProperties.setQueryAACube(descendant->getQueryAACube());
@@ -699,11 +699,17 @@ QVector<QUuid> EntityScriptingInterface::findEntitiesByType(const QString entity
 
 RayToEntityIntersectionResult EntityScriptingInterface::findRayIntersection(const PickRay& ray, bool precisionPicking, 
                 const QScriptValue& entityIdsToInclude, const QScriptValue& entityIdsToDiscard, bool visibleOnly, bool collidableOnly) {
-    PROFILE_RANGE(script_entities, __FUNCTION__);
-
     QVector<EntityItemID> entitiesToInclude = qVectorEntityItemIDFromScriptValue(entityIdsToInclude);
     QVector<EntityItemID> entitiesToDiscard = qVectorEntityItemIDFromScriptValue(entityIdsToDiscard);
-    return findRayIntersectionWorker(ray, Octree::Lock, precisionPicking, entitiesToInclude, entitiesToDiscard, visibleOnly, collidableOnly);
+
+    return findRayIntersectionVector(ray, precisionPicking, entitiesToInclude, entitiesToDiscard, visibleOnly, collidableOnly);
+}
+
+RayToEntityIntersectionResult EntityScriptingInterface::findRayIntersectionVector(const PickRay& ray, bool precisionPicking,
+                const QVector<EntityItemID>& entityIdsToInclude, const QVector<EntityItemID>& entityIdsToDiscard, bool visibleOnly, bool collidableOnly) {
+    PROFILE_RANGE(script_entities, __FUNCTION__);
+
+    return findRayIntersectionWorker(ray, Octree::Lock, precisionPicking, entityIdsToInclude, entityIdsToDiscard, visibleOnly, collidableOnly);
 }
 
 // FIXME - we should remove this API and encourage all users to use findRayIntersection() instead. We've changed

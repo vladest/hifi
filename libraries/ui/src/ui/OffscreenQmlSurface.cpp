@@ -43,7 +43,6 @@
 
 #include "types/FileTypeProfile.h"
 #include "types/HFWebEngineProfile.h"
-#include "types/HFTabletWebEngineProfile.h"
 #include "types/SoundEffect.h"
 
 #include "EntityScriptingInterface.h"
@@ -330,7 +329,7 @@ void initializeQmlEngine(QQmlEngine* engine, QQuickWindow* window) {
     }
     rootContext->setContextProperty("FileTypeProfile", new FileTypeProfile(rootContext));
     rootContext->setContextProperty("HFWebEngineProfile", new HFWebEngineProfile(rootContext));
-    rootContext->setContextProperty("HFTabletWebEngineProfile", new HFTabletWebEngineProfile(rootContext));
+    rootContext->setContextProperty("Paths", DependencyManager::get<PathUtils>().data());
 }
 
 QQmlEngine* acquireEngine(QQuickWindow* window) {
@@ -1048,8 +1047,8 @@ void OffscreenQmlSurface::emitWebEvent(const QVariant& message) {
         } else if (messageString == LOWER_KEYBOARD) {
             setKeyboardRaised(_currentFocusItem, false);
         } else {
-//            auto entityScriptingInterface = DependencyManager::get<EntityScriptingInterface>();
-//            entityScriptingInterface->parseEntityMessage(message);
+            auto entityScriptingInterface = DependencyManager::get<EntityScriptingInterface>();
+            entityScriptingInterface->parseEntityMessage(message);
 
             emit webEventReceived(message);
         }
