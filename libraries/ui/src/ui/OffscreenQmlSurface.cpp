@@ -298,6 +298,7 @@ private:
 };
 
 
+
 #define SINGLE_QML_ENGINE 0
 
 #if SINGLE_QML_ENGINE
@@ -374,6 +375,15 @@ void releaseEngine(QQmlEngine* engine) {
 #endif
 }
 
+#define OFFSCREEN_QML_SHARED_CONTEXT_PROPERTY "com.highfidelity.qml.gl.sharedContext"
+void OffscreenQmlSurface::setSharedContext(QOpenGLContext* sharedContext) {
+    qApp->setProperty(OFFSCREEN_QML_SHARED_CONTEXT_PROPERTY, QVariant::fromValue<void*>(sharedContext));
+}
+
+QOpenGLContext* OffscreenQmlSurface::getSharedContext() {
+    return static_cast<QOpenGLContext*>(qApp->property(OFFSCREEN_QML_SHARED_CONTEXT_PROPERTY).value<void*>());
+}
+
 void OffscreenQmlSurface::cleanup() {
     _canvas->makeCurrent();
 
@@ -395,9 +405,9 @@ void OffscreenQmlSurface::cleanup() {
 }
 
 void OffscreenQmlSurface::render() {
-#ifdef HIFI_ENABLE_NSIGHT_DEBUG
-    return;
-#endif
+    if (nsightActive()) {
+        return;
+    }
     if (_paused) {
         return;
     }
@@ -488,7 +498,7 @@ void OffscreenQmlSurface::onAboutToQuit() {
     QObject::disconnect(&_updateTimer);
 }
 
-void OffscreenQmlSurface::create(QOpenGLContext* shareContext) {
+void OffscreenQmlSurface::create() {
     qCDebug(uiLogging) << "Building QML surface";
 
     _renderControl = new QMyQuickRenderControl();
@@ -509,7 +519,7 @@ void OffscreenQmlSurface::create(QOpenGLContext* shareContext) {
     _renderControl->_renderWindow = _proxyWindow;
 
     _canvas = new OffscreenGLCanvas();
-    if (!_canvas->create(shareContext)) {
+    if (!_canvas->create(getSharedContext())) {
         qFatal("Failed to create OffscreenGLCanvas");
         return;
     };
@@ -1063,5 +1073,6 @@ void OffscreenQmlSurface::sendToQml(const QVariant& message) {
         QMetaObject::invokeMethod(_rootItem, "fromScript", Qt::QueuedConnection, Q_ARG(QVariant, message));
     }
 }
+
 
 #include "OffscreenQmlSurface.moc"
