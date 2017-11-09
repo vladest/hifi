@@ -313,7 +313,7 @@ void WebEntityRenderer::loadSourceURL() {
 }
 
 void WebEntityRenderer::hoverLeaveEntity(const PointerEvent& event) {
-    if (!_lastLocked && _webSurface && _pressed) {
+    if (!_lastLocked && _webSurface && _touchBeginAccepted) {
         // If the user mouses off the entity while the button is down, simulate a touch end.
         QTouchEvent::TouchPoint point;
         point.setId(event.getID());
@@ -330,6 +330,7 @@ void WebEntityRenderer::hoverLeaveEntity(const PointerEvent& event) {
         touchEvent->setDevice(&_touchDevice);
         touchEvent->setTarget(_webSurface->getRootItem());
         QCoreApplication::postEvent(_webSurface->getWindow(), touchEvent);
+        _activeTouchPoints.clear();
     }
 }
 
@@ -339,56 +340,77 @@ void WebEntityRenderer::handlePointerEvent(const PointerEvent& event) {
         return;
     }
 
-    glm::vec2 windowPos = event.getPos2D() * (METERS_TO_INCHES * _lastDPI);
-    QPointF windowPoint(windowPos.x, windowPos.y);
+    QPointF windowPoint;
+    {
+        glm::vec2 windowPos = event.getPos2D() * (METERS_TO_INCHES * _lastDPI);
+        windowPoint = QPointF(windowPos.x, windowPos.y);
+    }
+
+    Qt::MouseButton button = Qt::NoButton;
+    Qt::MouseButtons buttons = Qt::NoButton;
+    if (event.getButton() == PointerEvent::PrimaryButton) {
+        button = Qt::LeftButton;
+    }
+    if (event.getButtons() & PointerEvent::PrimaryButton) {
+        buttons |= Qt::LeftButton;
+    }
+
     if (event.getType() == PointerEvent::Move) {
         // Forward a mouse move event to webSurface
-        QMouseEvent* mouseEvent = new QMouseEvent(QEvent::MouseMove, windowPoint, windowPoint, windowPoint, Qt::NoButton, Qt::NoButton, Qt::NoModifier);
+        QMouseEvent* mouseEvent = new QMouseEvent(QEvent::MouseMove, windowPoint, windowPoint, windowPoint, button, buttons, Qt::NoModifier);
         QCoreApplication::postEvent(_webSurface->getWindow(), mouseEvent);
     }
 
+    Qt::TouchPointState state = Qt::TouchPointStationary;
+    if (event.getType() == PointerEvent::Press && event.getButton() == PointerEvent::PrimaryButton) {
+        state = Qt::TouchPointPressed;
+    } else if (event.getType() == PointerEvent::Release) {
+        state = Qt::TouchPointReleased;
+    } else if (_activeTouchPoints.count(event.getID()) && windowPoint != _activeTouchPoints[event.getID()].pos()) {
+        state = Qt::TouchPointMoved;
+    }
+
+    QEvent::Type touchType = QEvent::TouchUpdate;
+    if (_activeTouchPoints.empty()) {
+        // If the first active touch point is being created, send a begin
+        touchType = QEvent::TouchBegin;
+    } if (state == Qt::TouchPointReleased && _activeTouchPoints.size() == 1 && _activeTouchPoints.count(event.getID())) {
+        // If the last active touch point is being released, send an end
+        touchType = QEvent::TouchEnd;
+    }
     {
-        // Forward a touch update event to webSurface
-        if (event.getType() == PointerEvent::Press) {
-            this->_pressed = true;
-        } else if (event.getType() == PointerEvent::Release) {
-            this->_pressed = false;
-        }
-
-        QEvent::Type type;
-        Qt::TouchPointState touchPointState;
-        switch (event.getType()) {
-            case PointerEvent::Press:
-                type = QEvent::TouchBegin;
-                touchPointState = Qt::TouchPointPressed;
-                break;
-            case PointerEvent::Release:
-                type = QEvent::TouchEnd;
-                touchPointState = Qt::TouchPointReleased;
-                break;
-            case PointerEvent::Move:
-            default:
-                type = QEvent::TouchUpdate;
-                touchPointState = Qt::TouchPointMoved;
-                break;
-        }
-
         QTouchEvent::TouchPoint point;
         point.setId(event.getID());
-        point.setState(touchPointState);
+        point.setState(state);
         point.setPos(windowPoint);
         point.setScreenPos(windowPoint);
+        _activeTouchPoints[event.getID()] = point;
+    }
+
+    QTouchEvent touchEvent(touchType, &_touchDevice, event.getKeyboardModifiers());
+    {
         QList<QTouchEvent::TouchPoint> touchPoints;
-        touchPoints.push_back(point);
+        Qt::TouchPointStates touchPointStates;
+        for (const auto& entry : _activeTouchPoints) {
+            touchPointStates |= entry.second.state();
+            touchPoints.push_back(entry.second);
+        }
 
-        QTouchEvent* touchEvent = new QTouchEvent(type);
-        touchEvent->setWindow(_webSurface->getWindow());
-        touchEvent->setDevice(&_touchDevice);
-        touchEvent->setTarget(_webSurface->getRootItem());
-        touchEvent->setTouchPoints(touchPoints);
-        touchEvent->setTouchPointStates(touchPointState);
+        touchEvent.setWindow(_webSurface->getWindow());
+        touchEvent.setTarget(_webSurface->getRootItem());
+        touchEvent.setTouchPoints(touchPoints);
+        touchEvent.setTouchPointStates(touchPointStates);
+    }
 
-        QCoreApplication::postEvent(_webSurface->getWindow(), touchEvent);
+    if (touchType == QEvent::TouchBegin) {
+        _touchBeginAccepted = QCoreApplication::sendEvent(_webSurface->getWindow(), &touchEvent);
+    } else if (_touchBeginAccepted) {
+        QCoreApplication::sendEvent(_webSurface->getWindow(), &touchEvent);
+    }
+
+    // If this was a release event, remove the point from the active touch points
+    if (state == Qt::TouchPointReleased) {
+        _activeTouchPoints.erase(event.getID());
     }
 }
 
