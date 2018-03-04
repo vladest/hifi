@@ -2726,6 +2726,8 @@ void Application::onDesktopRootContextCreated(QQmlContext* surfaceContext) {
 void Application::onDesktopRootItemCreated(QQuickItem* rootItem) {
     Stats::show();
     AvatarInputs::show();
+    DependencyManager::get<OffscreenUi>()->getSurfaceContext()->
+            setContextProperty("AvatarInputs", AvatarInputs::getInstance());
 }
 
 void Application::updateCamera(RenderArgs& renderArgs, float deltaTime) {
