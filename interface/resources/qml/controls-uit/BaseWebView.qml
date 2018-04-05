@@ -33,6 +33,14 @@ WebEngineView {
             }
         }
     }
+    AnimatedImage {
+        //anchoring doesnt works here when changing content size
+        x: root.width/2 - width/2
+        y: root.height/2 - height/2
+        source: "../../icons/loader-snake-64-w.gif"
+        visible: root.loading && /^(http.*|)$/i.test(root.url.toString())
+        playing: visible
+        z: 10000
+    }
 
-    WebSpinner { }
 }
