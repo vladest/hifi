@@ -38,7 +38,7 @@ WebEngineView {
         x: root.width/2 - width/2
         y: root.height/2 - height/2
         source: "../../icons/loader-snake-64-w.gif"
-        visible: root.loading && /^(http.*|)$/i.test(root.url.toString())
+        visible: (root.loading && root.loadProgress < 99.9) && /^(http.*|)$/i.test(root.url.toString())
         playing: visible
         z: 10000
     }

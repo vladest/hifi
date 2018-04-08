@@ -133,7 +133,7 @@ Item {
         x: flick.width/2 - width/2
         y: flick.height/2 - height/2
         source: "../../icons/loader-snake-64-w.gif"
-        visible: webViewCore.loading && /^(http.*|)$/i.test(webViewCore.url.toString())
+        visible: (webViewCore.loading && webViewCore.loadProgress < 99.9) && /^(http.*|)$/i.test(webViewCore.url.toString())
         playing: visible
         z: 10000
     }
